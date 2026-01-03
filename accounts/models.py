@@ -12,6 +12,10 @@ class User(AbstractUser):
     role = models.CharField(max_length=50, choices=Role.choices, default=Role.ADMIN)
     staff_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
     department = models.ForeignKey('university.Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_members')
+    
+    # Account Locking Fields
+    failed_attempts = models.IntegerField(default=0)
+    is_locked = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.pk and self.is_superuser:
