@@ -36,7 +36,8 @@
                         </td>
                         <td>
                             <!-- Edit/Delete actions could go here -->
-                            <button class="btn btn-sm btn-outline-secondary">Edit</button>
+                            <a href="{% url 'dashboard:staff_edit' staff.pk %}"
+                                class="btn btn-sm btn-outline-secondary">Edit</a>
                         </td>
                     </tr>
                     {% empty %}

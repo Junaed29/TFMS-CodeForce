@@ -13,7 +13,7 @@ class DepartmentForm(forms.ModelForm):
         }
 
 class StaffForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput, required=False)
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}), required=False)
     
     class Meta:
         model = User

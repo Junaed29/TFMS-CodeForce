@@ -67,6 +67,18 @@ class StaffCreateView(RoleRequiredMixin, CreateView):
     success_url = reverse_lazy('dashboard:staff_list')
     required_role = User.Role.ADMIN
 
+class StaffUpdateView(RoleRequiredMixin, UpdateView):
+    model = User
+    form_class = StaffForm
+    template_name = "dashboard/admin/staff_form.html"
+    success_url = reverse_lazy('dashboard:staff_list')
+    required_role = User.Role.ADMIN
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_edit'] = True
+        return context
+
 # --- Admin Task Force Management ---
 class TaskForceListView(RoleRequiredMixin, ListView):
     model = TaskForce

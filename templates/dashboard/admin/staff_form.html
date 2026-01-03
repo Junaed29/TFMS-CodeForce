@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Add Staff{% endblock %}
+{% block title %}{% if is_edit %}Edit Staff{% else %}Add Staff{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header card-header-custom">
-                <h4 class="mb-0">Add New Staff Member</h4>
+                <h4 class="mb-0">{% if is_edit %}Edit Staff Member{% else %}Add New Staff Member{% endif %}</h4>
             </div>
             <div class="card-body">
                 <form method="post">
@@ -17,8 +17,8 @@
                         {% if field.name == 'is_locked' %}
                         <div class="form-check form-switch">
                             {{ field }}
-                            <label class="form-check-label fw-bold" for="{{ field.id_for_label }}">{{ field.label
-                                }}</label>
+                            <label class="form-check-label fw-bold" for="{{ field.id_for_label }}">Account
+                                Locked</label>
                         </div>
                         {% else %}
                         <label class="form-label fw-bold">{{ field.label }}</label>
@@ -47,7 +47,8 @@
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                         <a href="{% url 'dashboard:staff_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
-                        <button type="submit" class="btn btn-utm-primary">Save Staff Member</button>
+                        <button type="submit" class="btn btn-utm-primary">{% if is_edit %}Update Staff{% else %}Save
+                            Staff Member{% endif %}</button>
                     </div>
                 </form>
             </div>

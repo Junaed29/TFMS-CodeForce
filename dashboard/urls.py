@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     DashboardDispatcher, AdminDashboardView, HODDashboardView,
     PSMDashboardView, DeanDashboardView, LecturerDashboardView,
-    StaffListView, StaffCreateView, TaskForceListView, TaskForceCreateView,
+    StaffListView, StaffCreateView, StaffUpdateView, TaskForceListView, TaskForceCreateView,
     DepartmentListView, DepartmentCreateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
     LecturerTaskForceListView, DeanReportView, AuditLogListView
@@ -18,6 +18,7 @@ urlpatterns = [
     path('admin/', AdminDashboardView.as_view(), name='admin'),
     path('admin/staff/', StaffListView.as_view(), name='staff_list'),
     path('admin/staff/add/', StaffCreateView.as_view(), name='staff_add'),
+    path('admin/staff/<int:pk>/edit/', StaffUpdateView.as_view(), name='staff_edit'),
     path('admin/taskforce/', TaskForceListView.as_view(), name='taskforce_list'),
     path('admin/taskforce/add/', TaskForceCreateView.as_view(), name='taskforce_add'),
     path('admin/department/', DepartmentListView.as_view(), name='department_list'),
