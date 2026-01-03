@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Review Task Force{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Review Submission: {{ taskforce.name }}</h4>
+                <span class="badge bg-warning text-dark">Status: {{ taskforce.get_status_display }}</span>
+            </div>
+            <div class="card-body">
+
+                <!-- Task Force Details -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <h5 class="fw-bold">Description</h5>
+                        <p class="text-muted">{{ taskforce.description|default:"No description provided."|linebreaks }}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-uppercase small text-muted">Departments</h6>
+                            <ul class="list-unstyled">
+                                {% for dept in taskforce.departments.all %}
+                                <li><i class="bi bi-building me-2"></i>{{ dept.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-uppercase small text-muted">Chairman</h6>
+                            <p class="mb-0">
+                                {% if taskforce.chairman %}
+                                <i class="bi bi-person-badge me-2"></i>{{
+                                taskforce.chairman.get_full_name|default:taskforce.chairman.username }}
+                                {% else %}
+                                <span class="text-danger">Unassigned</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Members Section -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3">Proposed Members ({{ taskforce.members.count }})</h5>
+                    {% if taskforce.members.exists %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Department</th>
+                                    <th>Workload</th> <!-- Mocked for now -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in taskforce.members.all %}
+                                <tr>
+                                    <td>{{ member.get_full_name|default:member.username }}</td>
+                                    <td>{{ member.get_role_display }}</td>
+                                    <td>{{ member.department.name|default:"-" }}</td>
+                                    <td><span class="badge bg-success">Balanced</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">No members assigned.</div>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <!-- Action Section -->
+                <div class="bg-light p-4 rounded-3 border">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-gavel me-2"></i>Approval Action</h5>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Rejection Reason / Feedback</label>
+                            <textarea name="rejection_reason" class="form-control" rows="3"
+                                placeholder="Required only if rejecting..."></textarea>
+                            <div class="form-text">Provide feedback to the HOD if you are rejecting this submission.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="submit" name="action" value="reject" class="btn btn-outline-danger">
+                                <i class="bi bi-x-circle me-1"></i> Reject Submission
+                            </button>
+                            <button type="submit" name="action" value="approve" class="btn btn-success px-4"
+                                onclick="return confirm('Are you sure you want to APPROVE this Task Force? It will be locked.');">
+                                <i class="bi bi-check-circle me-1"></i> Approve
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
