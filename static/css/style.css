@@ -58,3 +58,66 @@ body {
 .bg-utm-moccasin {
   background-color: var(--utm-moccasin) !important;
 }
+
+/* Login Page Specifics */
+.login-body {
+  background: radial-gradient(circle at top left, #ffb347, #ffcc33), radial-gradient(circle at bottom right, #ffb347, #ffcc33);
+  background-color: #fca311;
+  /* Fallback */
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255, 165, 0, 0.2) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(255, 140, 0, 0.2) 0%, transparent 20%),
+    linear-gradient(135deg, #FF9F1C 0%, #FF6B35 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.login-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 450px;
+  width: 100%;
+}
+
+.login-btn {
+  background-color: #7A2038;
+  /* Visual match for the dark maroon in image */
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+  background-color: #5C001F;
+}
+
+.form-control-login {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.form-control-login:focus {
+  border-color: #7A2038;
+  box-shadow: 0 0 0 0.2rem rgba(122, 32, 56, 0.25);
+}
+
+.login-footer-link {
+  color: #7A2038;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.login-footer-link:hover {
+  text-decoration: underline;
+}
