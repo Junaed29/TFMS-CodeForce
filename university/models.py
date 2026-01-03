@@ -21,6 +21,7 @@ class TaskForce(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
+    rejection_reason = models.TextField(blank=True, null=True) # Feedback from PSM
     departments = models.ManyToManyField(Department, related_name='task_forces')
     chart_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
     

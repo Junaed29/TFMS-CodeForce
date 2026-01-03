@@ -100,6 +100,18 @@ from .forms import (
 
 # ... (Previous imports)
 
+class HODTaskForceListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/hod/taskforce_list.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.HOD
+
+    def get_queryset(self):
+        # Filter task forces that include the HOD's department
+        if not self.request.user.department:
+            return TaskForce.objects.none()
+        return TaskForce.objects.filter(departments=self.request.user.department).distinct()
+
 class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
     model = TaskForce
     form_class = TaskForceMembershipForm
@@ -130,6 +142,52 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
 class PSMDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/psm_dashboard.html"
     required_role = User.Role.PSM
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Count Pending Approvals
+        context['pending_count'] = TaskForce.objects.filter(status='SUBMITTED').count()
+        return context
+
+class PSMTaskForceListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/psm/taskforce_list.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.PSM
+
+    def get_queryset(self):
+        # PSM sees SUBMITTED task forces for approval
+        return TaskForce.objects.filter(status='SUBMITTED').order_by('-updated_at')
+
+from django.views.generic import DetailView
+
+class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
+    model = TaskForce
+    template_name = "dashboard/psm/taskforce_review.html"
+    context_object_name = "taskforce"
+    required_role = User.Role.PSM
+    
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        action = request.POST.get('action')
+        
+        if action == 'approve':
+            self.object.status = 'APPROVED'
+            self.object.save()
+            return redirect('dashboard:psm_taskforce_list')
+            
+        elif action == 'reject':
+            reason = request.POST.get('rejection_reason')
+            if reason:
+                self.object.rejection_reason = reason
+                self.object.status = 'REJECTED'
+                self.object.save()
+                return redirect('dashboard:psm_taskforce_list')
+            else:
+                 # Should handle error (empty reason), but keeping simple for now
+                 pass
+                 
+        return redirect('dashboard:psm_taskforce_list')
 
 class DeanDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/dean_dashboard.html"
