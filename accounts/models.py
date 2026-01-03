@@ -16,6 +16,9 @@ class User(AbstractUser):
     # Account Locking Fields
     failed_attempts = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
+    
+    # Password Security
+    must_change_password = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.pk and self.is_superuser:

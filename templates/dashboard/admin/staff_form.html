@@ -46,6 +46,12 @@
                     {% endfor %}
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        {% if is_edit %}
+                        <button type="button" class="btn btn-warning me-auto" data-bs-toggle="modal"
+                            data-bs-target="#resetPasswordModal">
+                            <i class="bi bi-key me-1"></i>Reset Password
+                        </button>
+                        {% endif %}
                         <a href="{% url 'dashboard:staff_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
                         <button type="submit" class="btn btn-utm-primary">{% if is_edit %}Update Staff{% else %}Save
                             Staff Member{% endif %}</button>
@@ -55,4 +61,31 @@
         </div>
     </div>
 </div>
+
+<!-- Reset Password Modal -->
+{% if is_edit %}
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title text-dark">Confirm Password Reset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reset the password for this user?</p>
+                <p class="small text-muted">A new temporary password will be generated and displayed in the system
+                    console (simulating email).</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{% url 'dashboard:staff_reset_password' form.instance.pk %}" method="post"
+                    class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning fw-bold">Reset Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

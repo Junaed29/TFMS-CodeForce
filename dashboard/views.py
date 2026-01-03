@@ -1,5 +1,6 @@
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
 from django.shortcuts import redirect
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .mixins import RoleRequiredMixin
@@ -67,6 +68,23 @@ class StaffCreateView(RoleRequiredMixin, CreateView):
     success_url = reverse_lazy('dashboard:staff_list')
     required_role = User.Role.ADMIN
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = self.object
+        
+        # Generate Temp Password
+        temp_password = User.objects.make_random_password()
+        user.set_password(temp_password)
+        user.must_change_password = True
+        user.save()
+        
+        # Log/Print for Admin (Simulating Email)
+        print(f"\n[EMAIL SENT] To: {user.email}\nSubject: Welcome to University System\nBody: Your temporary password is: {temp_password}\nPlease change it on first login.\n")
+        messages.success(self.request, f"Staff created. Temp password: {temp_password} (See Console)")
+        log_action(self.request, self.request.user, "CREATE_USER", "User", user.pk, f"Created user {user.username}")
+        
+        return response
+
 class StaffUpdateView(RoleRequiredMixin, UpdateView):
     model = User
     form_class = StaffForm
@@ -78,6 +96,28 @@ class StaffUpdateView(RoleRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['is_edit'] = True
         return context
+
+class StaffPasswordResetView(RoleRequiredMixin, View):
+    required_role = User.Role.ADMIN
+
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            user = User.objects.get(pk=pk)
+            # Generate new temp password
+            temp_password = User.objects.make_random_password()
+            user.set_password(temp_password)
+            user.must_change_password = True
+            user.save()
+            
+            # Log/Print
+            print(f"\n[EMAIL SENT] To: {user.email}\nSubject: Password Reset\nBody: Your new temporary password is: {temp_password}\nPlease change it on next login.\n")
+            messages.success(request, f"Password reset for {user.username}. Temp password: {temp_password} (Check Console)")
+            log_action(request, request.user, "RESET_PASSWORD", "User", user.pk, f"Reset password for {user.username}")
+            
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+            
+        return redirect('dashboard:staff_edit', pk=pk)
 
 # --- Admin Task Force Management ---
 class TaskForceListView(RoleRequiredMixin, ListView):
