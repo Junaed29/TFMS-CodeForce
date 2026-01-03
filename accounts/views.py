@@ -23,6 +23,9 @@ class CustomLoginView(LoginView):
             user.failed_attempts = 0
             user.save()
             
+        if user.must_change_password:
+            return redirect('force_password_change')
+            
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -56,3 +59,35 @@ class CustomLoginView(LoginView):
                 pass
                 
         return super().form_invalid(form)
+
+from django.urls import reverse_lazy
+from django.views.generic import FormView
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class ForcePasswordChangeView(LoginRequiredMixin, FormView):
+    template_name = 'registration/force_password_change.html'
+    form_class = PasswordChangeForm
+    success_url = reverse_lazy('dashboard:home')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save()
+        # Update session to prevent logging out
+        update_session_auth_hash(self.request, user)
+        
+        # Unset the flag
+        user.must_change_password = False
+        user.save()
+        
+        messages.success(self.request, "Password changed successfully. You can now access the dashboard.")
+        log_action(self.request, user, "CHANGE_PASSWORD", "User", user.pk, "User changed password via forced flow")
+        
+        return super().form_valid(form)
+
+from accounts.utils import log_action
