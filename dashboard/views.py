@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .mixins import RoleRequiredMixin
-from accounts.models import User
+from accounts.models import User, AuditLog
 from university.models import TaskForce, Department
 from .forms import StaffForm, TaskForceForm, DepartmentForm
 

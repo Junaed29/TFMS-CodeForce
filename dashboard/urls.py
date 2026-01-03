@@ -12,6 +12,7 @@ app_name = 'dashboard'
 
 urlpatterns = [
     path('', DashboardDispatcher.as_view(), name='home'),
+    path('audit-logs/', AuditLogListView.as_view(), name='audit_log_list'),
     
     # Admin Views
     path('admin/', AdminDashboardView.as_view(), name='admin'),

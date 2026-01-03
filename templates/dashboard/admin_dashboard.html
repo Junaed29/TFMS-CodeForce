@@ -25,12 +25,25 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card bg-white border-0 shadow-sm mb-3">
+        <div class="card h-100 hover-shadow border-0 shadow-sm mb-3">
             <div class="card-body">
                 <h5 class="card-title text-muted">Departments</h5>
                 <h2 class="display-4 fw-bold" style="color: var(--utm-maroon);">{{ department_count }}</h2>
                 <a href="{% url 'dashboard:department_list' %}"
                     class="btn btn-outline-secondary btn-sm stretched-link">Manage Departments</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 hover-shadow border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-muted">Audit Logs</h5>
+                <p class="card-text text-muted">Track system security and user actions.</p>
+                <a href="{% url 'dashboard:audit_log_list' %}" class="btn btn-outline-dark btn-sm stretched-link">View
+                    Logs</a>
             </div>
         </div>
     </div>
