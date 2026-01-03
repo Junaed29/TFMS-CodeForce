@@ -84,6 +84,26 @@ class HODDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/hod_dashboard.html"
     required_role = User.Role.HOD
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.department:
+            context['taskforce_count'] = TaskForce.objects.filter(departments=self.request.user.department).count()
+        else:
+            context['taskforce_count'] = 0
+        return context
+
+class HODTaskForceListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/hod/taskforce_list.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.HOD
+
+    def get_queryset(self):
+        # Filter task forces that include the HOD's department
+        if not self.request.user.department:
+            return TaskForce.objects.none()
+        return TaskForce.objects.filter(departments=self.request.user.department).distinct()
+
 class PSMDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/psm_dashboard.html"
     required_role = User.Role.PSM
