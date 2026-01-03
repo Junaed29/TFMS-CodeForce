@@ -40,10 +40,10 @@ class StaffForm(forms.ModelForm):
 class TaskForceForm(forms.ModelForm):
     class Meta:
         model = TaskForce
-        fields = ['name', 'department', 'description', 'chairman', 'members', 'status']
+        fields = ['name', 'departments', 'description', 'chairman', 'members', 'status']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'department': forms.Select(attrs={'class': 'form-select'}),
+            'departments': forms.SelectMultiple(attrs={'class': 'form-select', 'size': 5}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'chairman': forms.Select(attrs={'class': 'form-select'}),
             'members': forms.SelectMultiple(attrs={'class': 'form-select', 'size': 10}),

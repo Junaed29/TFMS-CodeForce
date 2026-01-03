@@ -18,7 +18,7 @@ class TaskForce(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='task_forces')
+    departments = models.ManyToManyField(Department, related_name='task_forces')
     chart_id = models.CharField(max_length=50, unique=True, blank=True, null=True) # For auto-gen ID
     
     # Memberships
@@ -32,4 +32,5 @@ class TaskForce(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.department.name})"
+        dept_names = ", ".join([d.name for d in self.departments.all()])
+        return f"{self.name} ({dept_names})"

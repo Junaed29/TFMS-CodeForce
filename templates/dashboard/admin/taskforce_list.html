@@ -21,7 +21,13 @@
                     <span class="badge bg-secondary">Inactive</span>
                     {% endif %}
                 </div>
-                <small class="text-muted">{{ tf.department.name }}</small>
+                <small class="text-muted">
+                    {% for dept in tf.departments.all %}
+                    {{ dept.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                    No Department
+                    {% endfor %}
+                </small>
             </div>
             <div class="card-body">
                 <p class="card-text text-muted">{{ tf.description|truncatewords:20 }}</p>
