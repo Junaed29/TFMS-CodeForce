@@ -3,11 +3,44 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="card border-danger mb-3">
-    <div class="card-header bg-danger text-white">Admin Area</div>
-    <div class="card-body text-danger">
-        <h5 class="card-title">System Administration</h5>
-        <p class="card-text">Manage users, roles, and system configuration.</p>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card bg-white border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h5 class="card-title text-muted">Total Staff</h5>
+                <h2 class="display-4 fw-bold" style="color: var(--utm-maroon);">{{ staff_count }}</h2>
+                <a href="{% url 'dashboard:staff_list' %}"
+                    class="btn btn-outline-secondary btn-sm stretched-link">Manage Staff</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-white border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h5 class="card-title text-muted">Active Task Forces</h5>
+                <h2 class="display-4 fw-bold" style="color: var(--utm-maroon);">{{ taskforce_count }}</h2>
+                <a href="{% url 'dashboard:taskforce_list' %}"
+                    class="btn btn-outline-secondary btn-sm stretched-link">Manage Task Forces</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-white border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h5 class="card-title text-muted">Departments</h5>
+                <h2 class="display-4 fw-bold" style="color: var(--utm-maroon);">{{ department_count }}</h2>
+                <a href="{% url 'dashboard:department_list' %}"
+                    class="btn btn-outline-secondary btn-sm stretched-link">Manage Departments</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-header card-header-custom">System Status</div>
+    <div class="card-body">
+        <p class="card-text">System is running normally. All automated ID generations are active (SRS_REQ_203,
+            SRS_REQ_209).</p>
     </div>
 </div>
 {% endblock %}

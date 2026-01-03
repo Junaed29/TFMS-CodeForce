@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Custom Apps
     'accounts',
     'dashboard',
+    'university',
 ]
 
 MIDDLEWARE = [
@@ -139,3 +140,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 1800  # 30 minutes in seconds (optional safety)
 SESSION_SAVE_EVERY_REQUEST = True
+
+# Email Backend (for Password Reset)
+# Prints emails to console instead of sending them
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

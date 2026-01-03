@@ -1,8 +1,11 @@
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from .mixins import RoleRequiredMixin
 from accounts.models import User
+from university.models import TaskForce, Department
+from .forms import StaffForm, TaskForceForm, DepartmentForm
 
 class DashboardDispatcher(LoginRequiredMixin, TemplateView):
     """Redirects authenticated users to their specific role dashboard."""
@@ -22,6 +25,59 @@ class DashboardDispatcher(LoginRequiredMixin, TemplateView):
 
 class AdminDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/admin_dashboard.html"
+    required_role = User.Role.ADMIN
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['staff_count'] = User.objects.exclude(role=User.Role.ADMIN).count()
+        context['taskforce_count'] = TaskForce.objects.count()
+        context['department_count'] = Department.objects.count()
+        context['recent_users'] = User.objects.order_by('-date_joined')[:5]
+        return context
+
+# --- Admin Department Management ---
+class DepartmentListView(RoleRequiredMixin, ListView):
+    model = Department
+    template_name = "dashboard/admin/department_list.html"
+    context_object_name = "departments"
+    required_role = User.Role.ADMIN
+
+class DepartmentCreateView(RoleRequiredMixin, CreateView):
+    model = Department
+    form_class = DepartmentForm
+    template_name = "dashboard/admin/department_form.html"
+    success_url = reverse_lazy('dashboard:department_list')
+    required_role = User.Role.ADMIN
+
+# --- Admin Staff Management ---
+class StaffListView(RoleRequiredMixin, ListView):
+    model = User
+    template_name = "dashboard/admin/staff_list.html"
+    context_object_name = "staff_list"
+    required_role = User.Role.ADMIN
+    
+    def get_queryset(self):
+         return User.objects.all().order_by('-date_joined')
+
+class StaffCreateView(RoleRequiredMixin, CreateView):
+    model = User
+    form_class = StaffForm
+    template_name = "dashboard/admin/staff_form.html"
+    success_url = reverse_lazy('dashboard:staff_list')
+    required_role = User.Role.ADMIN
+
+# --- Admin Task Force Management ---
+class TaskForceListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/admin/taskforce_list.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.ADMIN
+
+class TaskForceCreateView(RoleRequiredMixin, CreateView):
+    model = TaskForce
+    form_class = TaskForceForm
+    template_name = "dashboard/admin/taskforce_form.html"
+    success_url = reverse_lazy('dashboard:taskforce_list')
     required_role = User.Role.ADMIN
 
 class HODDashboardView(RoleRequiredMixin, TemplateView):

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Task Forces{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Task Force Management</h2>
+    <a href="{% url 'dashboard:taskforce_add' %}" class="btn btn-utm-primary">Create Task Force</a>
+</div>
+
+<div class="row">
+    {% for tf in taskforces %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title text-primary fw-bold mb-0">{{ tf.name }}</h5>
+                    {% if tf.status == 'ACTIVE' %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </div>
+                <small class="text-muted">{{ tf.department.name }}</small>
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">{{ tf.description|truncatewords:20 }}</p>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="fw-bold me-2">Chairman:</span>
+                    <span>{{ tf.chairman.get_full_name|default:"Unassigned" }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="fw-bold me-2">Members:</span>
+                    <span class="badge bg-light text-dark border">{{ tf.members.count }} Members</span>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top-0 pb-3 text-end">
+                <button class="btn btn-sm btn-outline-primary">Manage</button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <h4 class="text-muted">No task forces created yet.</h4>
+        <p>Get started by creating a new task force.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -40,9 +40,7 @@
             <button type="submit" class="btn btn-primary login-btn w-100 mb-3">Log in</button>
 
             <div class="border-top pt-3">
-                <a href="#" class="login-footer-link"
-                    onclick="alert('Password reset feature coming soon (SRS_REQ_110)'); return false;">Lost
-                    password?</a>
+                <a href="{% url 'password_reset' %}" class="login-footer-link">Lost password?</a>
             </div>
         </form>
     </div>
