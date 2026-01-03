@@ -44,9 +44,9 @@ class TaskForceForm(forms.ModelForm):
         fields = ['name', 'departments', 'description', 'chairman', 'members', 'status']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'departments': forms.SelectMultiple(attrs={'class': 'form-select', 'size': 5}),
+            'departments': forms.CheckboxSelectMultiple(),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'chairman': forms.Select(attrs={'class': 'form-select'}),
-            'members': forms.SelectMultiple(attrs={'class': 'form-select', 'size': 10}),
+            'members': forms.CheckboxSelectMultiple(),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }

@@ -15,7 +15,31 @@
                     {% for field in form %}
                     <div class="mb-3">
                         <label class="form-label fw-bold">{{ field.label }}</label>
+
+                        {% if field.name == 'departments' or field.name == 'members' %}
+                        {% if field.name == 'departments' and not field.field.queryset.exists %}
+                        <div class="alert alert-warning d-flex align-items-center" role="alert">
+                            <div>No departments found. You must create a department first.</div>
+                            <a href="{% url 'dashboard:department_add' %}"
+                                class="btn btn-sm btn-warning ms-auto fw-bold">Add Department</a>
+                        </div>
+                        {% else %}
+                        <div class="checkbox-list-container">
+                            {% for checkbox in field %}
+                            <div class="checkbox-list-item d-flex align-items-center">
+                                {{ checkbox.tag }}
+                                <label for="{{ checkbox.id_for_label }}" class="text-dark small ms-2 mb-0"
+                                    style="cursor: pointer;">
+                                    {{ checkbox.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% else %}
                         {{ field }}
+                        {% endif %}
+
                         {% if field.help_text %}
                         <div class="form-text">{{ field.help_text }}</div>
                         {% endif %}
