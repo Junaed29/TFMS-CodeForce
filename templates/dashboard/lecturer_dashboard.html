@@ -3,11 +3,28 @@
 {% block title %}Lecturer Dashboard{% endblock %}
 
 {% block content %}
-<div class="card border-primary mb-3">
-    <div class="card-header bg-primary text-white">Lecturer Area</div>
-    <div class="card-body text-primary">
-        <h5 class="card-title">Classroom Management</h5>
-        <p class="card-text">Access your courses and student lists.</p>
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm border-primary">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h5 class="card-title text-muted text-uppercase small fw-bold">Active Assignments</h5>
+                <h2 class="display-3 fw-bold text-primary my-3">{{ assignment_count }}</h2>
+                <p class="card-text text-muted">Task forces you are currently working on.</p>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <a href="{% url 'dashboard:lecturer_portfolio' %}"
+                    class="btn btn-outline-primary w-100 stretched-link">View Portfolio</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Recent Updates</h5>
+                <p class="text-muted">No recent notifications.</p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

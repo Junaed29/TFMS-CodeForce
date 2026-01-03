@@ -196,3 +196,24 @@ class DeanDashboardView(RoleRequiredMixin, TemplateView):
 class LecturerDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/lecturer_dashboard.html"
     required_role = User.Role.LECTURER
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Count assignments
+        context['assignment_count'] = TaskForce.objects.filter(members=self.request.user, status='APPROVED').count()
+        return context
+
+class LecturerTaskForceListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/lecturer/portfolio.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.LECTURER
+
+    def get_queryset(self):
+        # Lecturer sees Task Forces they are a member of OR chairman of
+        # Filter by APPROVED only? SRS doesn't specify, but usually they work on Approved ones.
+        # Let's show all for visibility, maybe filter stats in template.
+        from django.db.models import Q
+        return TaskForce.objects.filter(
+            Q(members=self.request.user) | Q(chairman=self.request.user)
+        ).distinct().order_by('-updated_at')

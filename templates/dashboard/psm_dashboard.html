@@ -3,11 +3,28 @@
 {% block title %}PSM Dashboard{% endblock %}
 
 {% block content %}
-<div class="card border-info mb-3">
-    <div class="card-header bg-info text-white">PSM Area</div>
-    <div class="card-body text-info">
-        <h5 class="card-title">Project Supervision</h5>
-        <p class="card-text">Manage and supervise ongoing projects.</p>
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm border-info">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h5 class="card-title text-muted text-uppercase small fw-bold">Pending Approvals</h5>
+                <h2 class="display-3 fw-bold text-info my-3">{{ pending_count }}</h2>
+                <p class="card-text text-muted">Task forces waiting for your review.</p>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <a href="{% url 'dashboard:psm_taskforce_list' %}"
+                    class="btn btn-outline-info w-100 stretched-link">View Approvals</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Recent Activity</h5>
+                <p class="text-muted">No recent activity logged.</p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

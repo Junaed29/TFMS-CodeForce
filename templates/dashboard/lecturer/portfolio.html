@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My Portfolio{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">My Task Force Portfolio</h1>
+    </div>
+
+    <div class="row">
+        {% for tf in taskforces %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div
+                class="card h-100 shadow-sm border-start border-4 {% if tf.chairman == request.user %}border-primary{% else %}border-secondary{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title text-truncate fw-bold mb-0" title="{{ tf.name }}">{{ tf.name }}</h5>
+                        <span
+                            class="badge {% if tf.status == 'APPROVED' %}bg-success{% elif tf.status == 'ACTIVE' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
+                            {{ tf.get_status_display }}
+                        </span>
+                    </div>
+
+                    {% if tf.chairman == request.user %}
+                    <div class="mb-2"><span
+                            class="badge bg-primary-subtle text-primary border border-primary-subtle">You are
+                            Chairman</span></div>
+                    {% endif %}
+
+                    <p class="card-text text-muted small mt-3">{{ tf.description|truncatewords:20|default:"No
+                        description." }}</p>
+
+                    <div class="mb-3">
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Departments</small>
+                        <div class="text-dark small">
+                            {% for dept in tf.departments.all %}
+                            {{ dept.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-grid gap-2">
+                        <!-- Placeholder actions -->
+                        <button class="btn btn-sm btn-outline-dark" disabled><i
+                                class="bi bi-file-earmark-pdf me-2"></i>Download Report</button>
+                        <button class="btn btn-sm btn-outline-secondary" disabled><i
+                                class="bi bi-chat-left-text me-2"></i>Submit Remarks</button>
+                    </div>
+                </div>
+                <div class="card-footer bg-light small text-muted">
+                    Updated: {{ tf.updated_at|date:"M d, Y" }}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                You are not assigned to any Task Forces yet.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
