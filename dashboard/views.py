@@ -136,8 +136,40 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
         action = self.request.POST.get('action')
         if action == 'submit':
             form.instance.status = 'SUBMITTED'
-        # If action is 'save', status remains as is (likely ACTIVE or REJECTED)
+            response = super().form_valid(form)
+            log_action(self.request, self.request.user, "SUBMIT_TASKFORCE", "TaskForce", self.object.pk, "Submitted for approval")
+            return response
         return super().form_valid(form)
+
+from accounts.utils import log_action
+import csv
+from django.http import HttpResponse
+
+class AuditLogListView(RoleRequiredMixin, ListView):
+    model = AuditLog
+    template_name = "dashboard/admin/audit_log.html"
+    context_object_name = "logs"
+    required_role = User.Role.ADMIN
+    paginate_by = 50
+
+    def get_queryset(self):
+        queryset = AuditLog.objects.all().select_related('actor')
+        user_query = self.request.GET.get('user')
+        if user_query:
+            queryset = queryset.filter(actor__username__icontains=user_query)
+        return queryset
+
+    def render_to_response(self, context, **response_kwargs):
+        # Handle Export
+        if self.request.GET.get('export') == 'csv':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="audit_logs.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['Timestamp', 'Actor', 'Action', 'Target Model', 'Target ID', 'Details', 'IP'])
+            for log in self.get_queryset():
+                writer.writerow([log.timestamp, log.actor, log.action, log.target_model, log.target_id, log.details, log.ip_address])
+            return response
+        return super().render_to_response(context, **response_kwargs)
 
 class PSMDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/psm_dashboard.html"
@@ -174,6 +206,7 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
         if action == 'approve':
             self.object.status = 'APPROVED'
             self.object.save()
+            log_action(request, request.user, "APPROVE_TASKFORCE", "TaskForce", self.object.pk, f"Approved task force: {self.object.name}")
             return redirect('dashboard:psm_taskforce_list')
             
         elif action == 'reject':
@@ -182,9 +215,9 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
                 self.object.rejection_reason = reason
                 self.object.status = 'REJECTED'
                 self.object.save()
+                log_action(request, request.user, "REJECT_TASKFORCE", "TaskForce", self.object.pk, f"Rejected with reason: {reason}")
                 return redirect('dashboard:psm_taskforce_list')
             else:
-                 # Should handle error (empty reason), but keeping simple for now
                  pass
                  
         return redirect('dashboard:psm_taskforce_list')

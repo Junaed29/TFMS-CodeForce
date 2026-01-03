@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}System Audit Logs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">System Audit Logs</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export to CSV
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body bg-light">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-auto">
+                <input type="text" name="user" class="form-control form-control-sm" placeholder="Search by Username..."
+                    value="{{ request.GET.user }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                <a href="{% url 'dashboard:audit_log_list' %}"
+                    class="btn btn-sm btn-link text-decoration-none">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive bg-white shadow-sm rounded">
+    <table class="table table-hover table-sm mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>Timestamp</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Details</th>
+                <th>IP Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td class="small text-muted text-nowrap">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                <td class="fw-bold text-primary">{{ log.actor.username|default:"System" }}</td>
+                <td>
+                    <span
+                        class="badge {% if 'LOGIN' in log.action %}bg-info{% elif 'REJECT' in log.action %}bg-danger{% elif 'APPROVE' in log.action %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ log.action }}
+                    </span>
+                </td>
+                <td class="small">{{ log.target_model }} #{{ log.target_id }}</td>
+                <td class="small text-muted">{{ log.details|truncatechars:50 }}</td>
+                <td class="small text-mono">{{ log.ip_address }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-4 text-muted">No audit logs found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{
+                page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -5,7 +5,7 @@ from .views import (
     StaffListView, StaffCreateView, TaskForceListView, TaskForceCreateView,
     DepartmentListView, DepartmentCreateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
-    LecturerTaskForceListView, DeanReportView
+    LecturerTaskForceListView, DeanReportView, AuditLogListView
 )
 
 app_name = 'dashboard'
