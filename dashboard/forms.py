@@ -41,12 +41,28 @@ class StaffForm(forms.ModelForm):
 class TaskForceForm(forms.ModelForm):
     class Meta:
         model = TaskForce
-        fields = ['name', 'departments', 'description', 'chairman', 'members', 'status']
+        fields = ['name', 'departments', 'description', 'status']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'departments': forms.CheckboxSelectMultiple(),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'chairman': forms.Select(attrs={'class': 'form-select'}),
-            'members': forms.CheckboxSelectMultiple(),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
+
+class TaskForceMembershipForm(forms.ModelForm):
+    class Meta:
+        model = TaskForce
+        fields = ['chairman', 'members']
+        widgets = {
+            'chairman': forms.Select(attrs={'class': 'form-select'}),
+            'members': forms.CheckboxSelectMultiple(),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        department = kwargs.pop('department', None)
+        super().__init__(*args, **kwargs)
+        if department:
+            # Only show staff from the HOD's department for both Chairman and Members
+            staff_qs = User.objects.filter(department=department, role__in=[User.Role.LECTURER, User.Role.DEAN, User.Role.HOD, User.Role.PSM])
+            self.fields['members'].queryset = staff_qs
+            self.fields['chairman'].queryset = staff_qs
