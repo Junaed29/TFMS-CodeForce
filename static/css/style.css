@@ -1,0 +1,60 @@
+:root {
+  /* UTM Color Codes */
+  --utm-maroon: #5C001F;
+  --utm-gold: #F8A617;
+  --utm-moccasin: #FFE6BF;
+}
+
+body {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar Branding */
+.navbar-custom {
+  background-color: var(--utm-maroon);
+  border-bottom: 4px solid var(--utm-gold);
+}
+
+.navbar-brand img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+/* Footer */
+.footer {
+  margin-top: auto;
+  background-color: var(--utm-maroon);
+  color: white;
+  padding: 1rem 0;
+  border-top: 4px solid var(--utm-gold);
+}
+
+/* Common Components */
+.card-header-custom {
+  background-color: var(--utm-maroon);
+  color: var(--utm-gold);
+  font-weight: bold;
+}
+
+.btn-utm-primary {
+  background-color: var(--utm-maroon);
+  color: white;
+  border-color: var(--utm-maroon);
+}
+
+.btn-utm-primary:hover {
+  background-color: #3b0014;
+  color: var(--utm-gold);
+  border-color: #3b0014;
+}
+
+.bg-utm-gold {
+  background-color: var(--utm-gold) !important;
+}
+
+.bg-utm-moccasin {
+  background-color: var(--utm-moccasin) !important;
+}
