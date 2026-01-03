@@ -1,13 +1,66 @@
 {% extends "base.html" %}
 
-{% block title %}Dean Dashboard{% endblock %}
+{% block title %}Executive Dashboard{% endblock %}
 
 {% block content %}
-<div class="card border-dark mb-3">
-    <div class="card-header bg-dark text-white">Dean Area</div>
-    <div class="card-body text-dark">
-        <h5 class="card-title">Faculty Overview</h5>
-        <p class="card-text">Monitor faculty performance and reports.</p>
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-primary">
+            <div class="card-body text-center">
+                <h6 class="text-uppercase text-muted fw-bold small">Total Task Forces</h6>
+                <h2 class="display-4 fw-bold text-primary">{{ total_taskforces }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-success">
+            <div class="card-body text-center">
+                <h6 class="text-uppercase text-muted fw-bold small">Active (Approved)</h6>
+                <h2 class="display-4 fw-bold text-success">{{ active_taskforces }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-warning">
+            <div class="card-body text-center">
+                <h6 class="text-uppercase text-muted fw-bold small">Pending Approval</h6>
+                <h2 class="display-4 fw-bold text-warning">{{ pending_approvals }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Executive Reports</h5>
+                <a href="{% url 'dashboard:dean_reports' %}" class="btn btn-sm btn-light">View Full Report</a>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Access detailed reports and analytics for all departments.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dashboard:dean_reports' %}" class="btn btn-outline-dark">
+                        <i class="bi bi-table me-2"></i> Browse All Task Forces
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Quick Actions</h5>
+                <hr>
+                <button class="btn btn-light w-100 text-start mb-2" disabled>
+                    <i class="bi bi-download me-2"></i> Export Summary PDF
+                </button>
+                <button class="btn btn-light w-100 text-start" disabled>
+                    <i class="bi bi-envelope me-2"></i> Email Faculty Heads
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

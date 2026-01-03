@@ -192,6 +192,14 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
 class DeanDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/dean_dashboard.html"
     required_role = User.Role.DEAN
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Executive Stats
+        context['total_taskforces'] = TaskForce.objects.count()
+        context['active_taskforces'] = TaskForce.objects.filter(status='APPROVED').count()
+        context['pending_approvals'] = TaskForce.objects.filter(status='SUBMITTED').count()
+        return context
 
 class LecturerDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/lecturer_dashboard.html"
@@ -217,3 +225,26 @@ class LecturerTaskForceListView(RoleRequiredMixin, ListView):
         return TaskForce.objects.filter(
             Q(members=self.request.user) | Q(chairman=self.request.user)
         ).distinct().order_by('-updated_at')
+
+class DeanReportView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/dean/report_list.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.DEAN
+
+    def get_queryset(self):
+        # Dean sees ALL task forces
+        queryset = TaskForce.objects.all().select_related('chairman').prefetch_related('departments')
+        
+        # Filter by Department
+        dept_id = self.request.GET.get('department')
+        if dept_id:
+            queryset = queryset.filter(departments__id=dept_id)
+            
+        return queryset.order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from university.models import Department
+        context['departments'] = Department.objects.all()
+        return context

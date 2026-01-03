@@ -5,7 +5,7 @@ from .views import (
     StaffListView, StaffCreateView, TaskForceListView, TaskForceCreateView,
     DepartmentListView, DepartmentCreateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
-    LecturerTaskForceListView
+    LecturerTaskForceListView, DeanReportView
 )
 
 app_name = 'dashboard'
@@ -33,7 +33,9 @@ urlpatterns = [
     path('psm/approvals/<int:pk>/', PSMTaskForceDetailView.as_view(), name='psm_taskforce_review'),
     
     
+    # Dean Views
     path('dean/', DeanDashboardView.as_view(), name='dean'),
+    path('dean/reports/', DeanReportView.as_view(), name='dean_reports'),
     
     # Lecturer Views
     path('lecturer/', LecturerDashboardView.as_view(), name='lecturer'),

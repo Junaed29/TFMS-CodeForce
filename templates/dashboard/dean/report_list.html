@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Faculty Task Force Reports</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Share</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Export</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4 bg-light">
+        <div class="card-body py-3">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="fw-bold">Filter by Dept:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="department" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}" {% if request.GET.department==dept.id|stringformat:"s"
+                            %}selected{% endif %}>
+                            {{ dept.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <a href="{% url 'dashboard:dean_reports' %}" class="btn btn-sm btn-link text-decoration-none">Clear
+                        Filter</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive bg-white shadow-sm rounded">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Task Force Name</th>
+                    <th>Status</th>
+                    <th>Departments</th>
+                    <th>Chairman</th>
+                    <th>Members</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tf in taskforces %}
+                <tr>
+                    <td class="fw-bold">{{ tf.name }}</td>
+                    <td>
+                        <span
+                            class="badge {% if tf.status == 'APPROVED' %}bg-success{% elif tf.status == 'REJECTED' %}bg-danger{% elif tf.status == 'SUBMITTED' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                            {{ tf.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% for dept in tf.departments.all %}
+                        <span class="badge bg-light text-dark border">{{ dept.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>{{ tf.chairman.get_full_name|default:"-" }}</td>
+                    <td>{{ tf.members.count }}</td>
+                    <td>{{ tf.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No task forces found matching your criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
