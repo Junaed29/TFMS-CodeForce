@@ -92,17 +92,40 @@ class HODDashboardView(RoleRequiredMixin, TemplateView):
             context['taskforce_count'] = 0
         return context
 
-class HODTaskForceListView(RoleRequiredMixin, ListView):
+from django.views.generic import ListView, CreateView, UpdateView
+from django.urls import reverse_lazy
+from .forms import (
+    StaffForm, TaskForceForm, DepartmentForm, TaskForceMembershipForm
+)
+
+# ... (Previous imports)
+
+class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
     model = TaskForce
-    template_name = "dashboard/hod/taskforce_list.html"
-    context_object_name = "taskforces"
+    form_class = TaskForceMembershipForm
+    template_name = "dashboard/hod/taskforce_manage.html"
+    context_object_name = "taskforce"
     required_role = User.Role.HOD
+    success_url = reverse_lazy('dashboard:hod_taskforce_list')
 
     def get_queryset(self):
-        # Filter task forces that include the HOD's department
+        # Ensure HOD can only edit task forces for their department
         if not self.request.user.department:
             return TaskForce.objects.none()
-        return TaskForce.objects.filter(departments=self.request.user.department).distinct()
+        return TaskForce.objects.filter(departments=self.request.user.department)
+
+    def get_form_kwargs(self):
+        """Pass the HOD's department to the form to filter staff."""
+        kwargs = super().get_form_kwargs()
+        kwargs['department'] = self.request.user.department
+        return kwargs
+
+    def form_valid(self, form):
+        action = self.request.POST.get('action')
+        if action == 'submit':
+            form.instance.status = 'SUBMITTED'
+        # If action is 'save', status remains as is (likely ACTIVE or REJECTED)
+        return super().form_valid(form)
 
 class PSMDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/psm_dashboard.html"

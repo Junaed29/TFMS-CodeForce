@@ -3,7 +3,8 @@ from .views import (
     DashboardDispatcher, AdminDashboardView, HODDashboardView,
     PSMDashboardView, DeanDashboardView, LecturerDashboardView,
     StaffListView, StaffCreateView, TaskForceListView, TaskForceCreateView,
-    DepartmentListView, DepartmentCreateView, HODTaskForceListView
+    DepartmentListView, DepartmentCreateView, HODTaskForceListView,
+    HODTaskForceUpdateView
 )
 
 app_name = 'dashboard'
@@ -23,6 +24,7 @@ urlpatterns = [
     # HOD Views
     path('hod/', HODDashboardView.as_view(), name='hod'),
     path('hod/taskforce/', HODTaskForceListView.as_view(), name='hod_taskforce_list'),
+    path('hod/taskforce/<int:pk>/manage/', HODTaskForceUpdateView.as_view(), name='hod_taskforce_manage'),
     path('psm/', PSMDashboardView.as_view(), name='psm'),
     path('dean/', DeanDashboardView.as_view(), name='dean'),
     path('lecturer/', LecturerDashboardView.as_view(), name='lecturer'),
