@@ -36,3 +36,21 @@ class User(AbstractUser):
                  self.staff_id = "STF-0001"
         
         return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.username} ({self.get_role_display()})"
+
+class AuditLog(models.Model):
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='audit_logs')
+    action = models.CharField(max_length=50)  # e.g. "LOGIN", "CREATE", "APPROVE"
+    target_model = models.CharField(max_length=50, blank=True, null=True)
+    target_id = models.CharField(max_length=50, blank=True, null=True)
+    details = models.TextField(blank=True, null=True) # JSON or text justification
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.timestamp} - {self.actor} - {self.action}"
