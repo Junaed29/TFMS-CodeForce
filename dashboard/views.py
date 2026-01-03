@@ -33,6 +33,7 @@ class AdminDashboardView(RoleRequiredMixin, TemplateView):
         context['taskforce_count'] = TaskForce.objects.count()
         context['department_count'] = Department.objects.count()
         context['recent_users'] = User.objects.order_by('-date_joined')[:5]
+        context['recent_logs'] = AuditLog.objects.select_related('actor').order_by('-timestamp')[:5]
         return context
 
 # --- Admin Department Management ---
