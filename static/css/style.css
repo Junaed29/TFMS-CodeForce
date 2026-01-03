@@ -6,10 +6,20 @@
 }
 
 body {
-  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fca311;
+  /* Fallback */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Global Background from Login Page */
+  background: radial-gradient(circle at top left, #ffb347, #ffcc33), radial-gradient(circle at bottom right, #ffb347, #ffcc33);
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255, 165, 0, 0.2) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(255, 140, 0, 0.2) 0%, transparent 20%),
+    linear-gradient(135deg, #FF9F1C 0%, #FF6B35 100%);
+  background-attachment: fixed;
+  /* Keep background fixed while scrolling */
 }
 
 /* Navbar Branding */
@@ -60,18 +70,11 @@ body {
 }
 
 /* Login Page Specifics */
+/* Background is now inherited from body */
 .login-body {
-  background: radial-gradient(circle at top left, #ffb347, #ffcc33), radial-gradient(circle at bottom right, #ffb347, #ffcc33);
-  background-color: #fca311;
-  /* Fallback */
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(255, 165, 0, 0.2) 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, rgba(255, 140, 0, 0.2) 0%, transparent 20%),
-    linear-gradient(135deg, #FF9F1C 0%, #FF6B35 100%);
-  display: flex;
-  align-items: center;
+  /* Center the card vertically and horizontally */
   justify-content: center;
-  height: 100vh;
+  align-items: center;
 }
 
 .login-card {
