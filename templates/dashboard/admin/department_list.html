@@ -27,7 +27,8 @@
                         <td>{{ dept.staff_members.count }}</td>
                         <td>{{ dept.task_forces.count }}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-secondary">Edit</button>
+                            <a href="{% url 'dashboard:department_edit' dept.pk %}"
+                                class="btn btn-sm btn-outline-secondary">Edit</a>
                         </td>
                     </tr>
                     {% empty %}

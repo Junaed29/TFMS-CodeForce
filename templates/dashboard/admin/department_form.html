@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Create Department{% endblock %}
+{% block title %}{% if is_edit %}Edit Department{% else %}Create Department{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card shadow-sm">
             <div class="card-header card-header-custom">
-                <h4 class="mb-0">Create New Department</h4>
+                <h4 class="mb-0">{% if is_edit %}Edit Department{% else %}Create New Department{% endif %}</h4>
             </div>
             <div class="card-body">
                 <form method="post">
@@ -27,7 +27,7 @@
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                         <a href="{% url 'dashboard:department_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
-                        <button type="submit" class="btn btn-utm-primary">Create Department</button>
+                        <button type="submit" class="btn btn-utm-primary">{% if is_edit %}Update Department{% else %}Create Department{% endif %}</button>
                     </div>
                 </form>
             </div>

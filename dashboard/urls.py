@@ -3,7 +3,7 @@ from .views import (
     DashboardDispatcher, AdminDashboardView, HODDashboardView,
     PSMDashboardView, DeanDashboardView, LecturerDashboardView,
     StaffListView, StaffCreateView, StaffUpdateView, StaffPasswordResetView, TaskForceListView, TaskForceCreateView,
-    DepartmentListView, DepartmentCreateView, HODTaskForceListView,
+    DepartmentListView, DepartmentCreateView, DepartmentUpdateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
     LecturerTaskForceListView, DeanReportView, AuditLogListView
 )
@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/taskforce/add/', TaskForceCreateView.as_view(), name='taskforce_add'),
     path('admin/department/', DepartmentListView.as_view(), name='department_list'),
     path('admin/department/add/', DepartmentCreateView.as_view(), name='department_add'),
+    path('admin/department/<int:pk>/edit/', DepartmentUpdateView.as_view(), name='department_edit'),
 
     # HOD Views
     path('hod/', HODDashboardView.as_view(), name='hod'),
