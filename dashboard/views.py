@@ -2,8 +2,11 @@ from django.views.generic import TemplateView, ListView, CreateView, UpdateView,
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.forms import PasswordResetForm
 from django.urls import reverse_lazy
 from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+from django.conf import settings
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
 from university.models import TaskForce, Department
@@ -91,9 +94,16 @@ class StaffCreateView(RoleRequiredMixin, CreateView):
         user.must_change_password = True
         user.save()
         
-        # Log/Print for Admin (Simulating Email)
-        print(f"\n[EMAIL SENT] To: {user.email}\nSubject: Welcome to University System\nBody: Your temporary password is: {temp_password}\nPlease change it on first login.\n")
-        messages.success(self.request, f"Staff created. Temp password: {temp_password} (See Console)")
+        # Send Email
+        subject = "Welcome to University System"
+        message = f"Hello {user.get_full_name()},\n\nYour account has been created.\nYour temporary password is: {temp_password}\n\nPlease change it on your first login."
+        try:
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            messages.success(self.request, f"Staff created. Email sent to {user.email}.")
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            messages.warning(self.request, f"Staff created, but email failed to send. Temp Password: {temp_password}")
+
         log_action(self.request, self.request.user, "CREATE_USER", "User", user.pk, f"Created user {user.username}")
         
         return response
@@ -116,17 +126,21 @@ class StaffPasswordResetView(RoleRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         try:
             user = User.objects.get(pk=pk)
-            # Generate new temp password
-            temp_password = get_random_string(10)
-            user.set_password(temp_password)
-            user.must_change_password = True
-            user.save()
             
-            # Log/Print
-            print(f"\n[EMAIL SENT] To: {user.email}\nSubject: Password Reset\nBody: Your new temporary password is: {temp_password}\nPlease change it on next login.\n")
-            messages.success(request, f"Password reset for {user.username}. Temp password: {temp_password} (Check Console)")
-            log_action(request, request.user, "RESET_PASSWORD", "User", user.pk, f"Reset password for {user.username}")
-            
+            # Use PasswordResetForm to send the standard reset link
+            form = PasswordResetForm({'email': user.email})
+            if form.is_valid():
+                form.save(
+                    request=request,
+                    use_https=request.is_secure(),
+                    email_template_name='registration/password_reset_email.html',
+                    subject_template_name='registration/password_reset_subject.txt'
+                )
+                messages.success(request, f"Password reset link sent to {user.email}.")
+                log_action(request, request.user, "RESET_PASSWORD", "User", user.pk, f"Sent password reset link for {user.username}")
+            else:
+                 messages.error(request, f"Could not send reset link. Invalid email for user {user.username}?")
+
         except User.DoesNotExist:
             messages.error(request, "User not found.")
             
@@ -142,7 +156,16 @@ class StaffUnlockView(RoleRequiredMixin, View):
             user.failed_attempts = 0
             user.save()
             
-            messages.success(request, f"Account unlocked for {user.username}.")
+            
+            # Send Email
+            subject = "Account Unlocked - University System"
+            message = f"Hello {user.get_full_name()},\n\nYour account has been unlocked. You can now log in."
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+            messages.success(request, f"Account unlocked for {user.username}. Email sent.")
             log_action(request, request.user, "UNLOCK_USER", "User", user.pk, f"Unlocked user {user.username}")
             
         except User.DoesNotExist:
@@ -164,7 +187,16 @@ class StaffDeactivateView(RoleRequiredMixin, View):
             user.is_active = False
             user.save()
             
-            messages.success(request, f"User {user.username} deactivated successfully.")
+            
+            # Send Email
+            subject = "Account Deactivated - University System"
+            message = f"Hello {user.get_full_name()},\n\nYour account has been deactivated.\nReason: {justification}\n\nPlease contact IT support if you believe this is an error."
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+            messages.success(request, f"User {user.username} deactivated successfully. Notification email sent.")
             log_action(request, request.user, "DEACTIVATE_USER", "User", user.pk, f"Deactivated user {user.username}. Reason: {justification}")
             
         except User.DoesNotExist:
@@ -183,7 +215,16 @@ class StaffActivateView(RoleRequiredMixin, View):
             user.failed_attempts = 0
             user.save()
             
-            messages.success(request, f"User {user.username} activated successfully.")
+            
+            # Send Email
+            subject = "Account Activated - University System"
+            message = f"Hello {user.get_full_name()},\n\nYour account has been reactivated. You can now log in."
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+            messages.success(request, f"User {user.username} activated successfully. Notification email sent.")
             log_action(request, request.user, "ACTIVATE_USER", "User", user.pk, f"Activated user {user.username}")
             
         except User.DoesNotExist:
@@ -263,6 +304,16 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
             form.instance.status = 'SUBMITTED'
             response = super().form_valid(form)
             log_action(self.request, self.request.user, "SUBMIT_TASKFORCE", "TaskForce", self.object.pk, "Submitted for approval")
+            
+            # Send Email to HOD (Confirmation)
+            subject = f"Task Force Submitted: {self.object.name}"
+            message = f"Hello {self.request.user.get_full_name()},\n\nYou have successfully submitted the Task Force '{self.object.name}' for approval."
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.request.user.email])
+            except Exception as e:
+                print(f"Error sending email: {e}")
+                
+            messages.success(self.request, f"Task Force '{self.object.name}' submitted successfully. Confirmation email sent.")
             return response
         return super().form_valid(form)
 
@@ -332,6 +383,17 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
             self.object.status = 'APPROVED'
             self.object.save()
             log_action(request, request.user, "APPROVE_TASKFORCE", "TaskForce", self.object.pk, f"Approved task force: {self.object.name}")
+            
+            # Send Email to Chairman
+            if self.object.chairman:
+                subject = f"Task Force Approved: {self.object.name}"
+                message = f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been APPROVED by the PSM.\n\nMonitor your dashboard for further updates."
+                try:
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email])
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+
+            messages.success(request, f"Task Force '{self.object.name}' approved. Email sent to Chairman.")
             return redirect('dashboard:psm_taskforce_list')
             
         elif action == 'reject':
@@ -341,6 +403,17 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
                 self.object.status = 'REJECTED'
                 self.object.save()
                 log_action(request, request.user, "REJECT_TASKFORCE", "TaskForce", self.object.pk, f"Rejected with reason: {reason}")
+                
+                # Send Email to Chairman
+                if self.object.chairman:
+                    subject = f"Task Force Rejected: {self.object.name}"
+                    message = f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been REJECTED by the PSM.\n\nReason:\n{reason}\n\nPlease review and resubmit if applicable."
+                    try:
+                        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email])
+                    except Exception as e:
+                        print(f"Error sending email: {e}")
+
+                messages.success(request, f"Task Force '{self.object.name}' rejected. Email sent to Chairman.")
                 return redirect('dashboard:psm_taskforce_list')
             else:
                  pass
