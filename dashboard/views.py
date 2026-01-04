@@ -144,6 +144,7 @@ class StaffPasswordResetView(RoleRequiredMixin, View):
                     request=request,
                     use_https=request.is_secure(),
                     email_template_name='registration/password_reset_email.html',
+                    html_email_template_name='registration/password_reset_email.html',
                     subject_template_name='registration/password_reset_subject.txt'
                 )
                 messages.success(request, f"Password reset link sent to {user.email}.")

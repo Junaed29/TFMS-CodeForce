@@ -12,7 +12,9 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     
     # Password Reset URLs (Django defaults, can keep or move to accounts if needed)
-    path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/', auth_views.PasswordResetView.as_view(
+        html_email_template_name='registration/password_reset_email.html'
+    ), name='password_reset'),
     path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
