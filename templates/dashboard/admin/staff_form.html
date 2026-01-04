@@ -14,13 +14,6 @@
                     {% csrf_token %}
                     {% for field in form %}
                     <div class="mb-3">
-                        {% if field.name == 'is_locked' %}
-                        <div class="form-check form-switch">
-                            {{ field }}
-                            <label class="form-check-label fw-bold" for="{{ field.id_for_label }}">Account
-                                Locked</label>
-                        </div>
-                        {% else %}
                         <label class="form-label fw-bold">{{ field.label }}</label>
 
                         {% if field.name == 'department' and not field.field.queryset.exists %}
@@ -33,7 +26,6 @@
                         </div>
                         {% else %}
                         {{ field }}
-                        {% endif %}
                         {% endif %}
 
                         {% if field.help_text %}

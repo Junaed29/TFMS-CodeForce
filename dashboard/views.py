@@ -131,6 +131,24 @@ class StaffPasswordResetView(RoleRequiredMixin, View):
             
         return redirect('dashboard:staff_edit', pk=pk)
 
+class StaffUnlockView(RoleRequiredMixin, View):
+    required_role = User.Role.ADMIN
+
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            user = User.objects.get(pk=pk)
+            user.is_locked = False
+            user.failed_attempts = 0
+            user.save()
+            
+            messages.success(request, f"Account unlocked for {user.username}.")
+            log_action(request, request.user, "UNLOCK_USER", "User", user.pk, f"Unlocked user {user.username}")
+            
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+            
+        return redirect('dashboard:staff_list')
+
 # --- Admin Task Force Management ---
 class TaskForceListView(RoleRequiredMixin, ListView):
     model = TaskForce

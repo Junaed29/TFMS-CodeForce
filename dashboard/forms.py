@@ -24,12 +24,15 @@ class StaffForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'role', 'department', 'is_locked']
+        fields = ['username', 'first_name', 'last_name', 'email', 'role', 'department', 'is_active']
         widgets = {
              'username': forms.TextInput(attrs={'class': 'form-control'}),
              'last_name': forms.TextInput(attrs={'class': 'form-control'}),
              'role': forms.Select(attrs={'class': 'form-select'}),
-             'is_locked': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+             'is_active': forms.Select(
+                 choices=[(True, 'Active'), (False, 'Inactive')],
+                 attrs={'class': 'form-select'}
+             ),
         }
 
 class TaskForceForm(forms.ModelForm):

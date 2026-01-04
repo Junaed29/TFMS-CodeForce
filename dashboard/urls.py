@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     DashboardDispatcher, AdminDashboardView, HODDashboardView,
     PSMDashboardView, DeanDashboardView, LecturerDashboardView,
-    StaffListView, StaffCreateView, StaffUpdateView, StaffPasswordResetView, TaskForceListView, TaskForceCreateView,
+    StaffListView, StaffCreateView, StaffUpdateView, StaffPasswordResetView, StaffUnlockView, TaskForceListView, TaskForceCreateView,
     DepartmentListView, DepartmentCreateView, DepartmentUpdateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
     LecturerTaskForceListView, DeanReportView, AuditLogListView
@@ -19,6 +19,7 @@ urlpatterns = [
     path('admin/staff/', StaffListView.as_view(), name='staff_list'),
     path('admin/staff/add/', StaffCreateView.as_view(), name='staff_add'),
     path('admin/staff/<int:pk>/edit/', StaffUpdateView.as_view(), name='staff_edit'),
+    path('admin/staff/<int:pk>/unlock/', StaffUnlockView.as_view(), name='staff_unlock'),
     path('admin/staff/<int:pk>/reset-password/', StaffPasswordResetView.as_view(), name='staff_reset_password'),
     path('admin/taskforce/', TaskForceListView.as_view(), name='taskforce_list'),
     path('admin/taskforce/add/', TaskForceCreateView.as_view(), name='taskforce_add'),
