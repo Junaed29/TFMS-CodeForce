@@ -98,7 +98,7 @@ class StaffCreateView(RoleRequiredMixin, CreateView):
         
         # Send Email
         # Send Email
-        subject = "Welcome to University System"
+        subject = "Welcome to Task Force Management System"
         context = {
             'user': user,
             'temp_password': temp_password,
@@ -170,7 +170,7 @@ class StaffUnlockView(RoleRequiredMixin, View):
             
             # Send Email
             # Send Email
-            subject = "Account Unlocked - University System"
+            subject = "Account Unlocked - Task Force Management System"
             context = {
                 'headline': "Account Unlocked",
                 'body_text': f"Hello {user.get_full_name()},\n\nYour account has been unlocked. You can now log in to the system.",
@@ -210,7 +210,7 @@ class StaffDeactivateView(RoleRequiredMixin, View):
             
             # Send Email
             # Send Email
-            subject = "Account Deactivated - University System"
+            subject = "Account Deactivated - Task Force Management System"
             context = {
                 'headline': "Account Deactivated",
                 'body_text': f"Hello {user.get_full_name()},\n\nYour account has been deactivated.\n\nReason: {justification}\n\nPlease contact IT support if you believe this is an error.",
@@ -245,7 +245,7 @@ class StaffActivateView(RoleRequiredMixin, View):
             
             # Send Email
             # Send Email
-            subject = "Account Activated - University System"
+            subject = "Account Activated - Task Force Management System"
             context = {
                 'headline': "Account Reactivated",
                 'body_text': f"Hello {user.get_full_name()},\n\nYour account has been reactivated. You can now log in.",
