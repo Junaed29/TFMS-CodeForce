@@ -7,6 +7,8 @@ from django.urls import reverse_lazy
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
 from university.models import TaskForce, Department
@@ -95,10 +97,18 @@ class StaffCreateView(RoleRequiredMixin, CreateView):
         user.save()
         
         # Send Email
+        # Send Email
         subject = "Welcome to University System"
-        message = f"Hello {user.get_full_name()},\n\nYour account has been created.\nYour temporary password is: {temp_password}\n\nPlease change it on your first login."
+        context = {
+            'user': user,
+            'temp_password': temp_password,
+            'login_url': self.request.build_absolute_uri(reverse_lazy('login'))
+        }
+        html_message = render_to_string('email/account_created.html', context)
+        plain_message = strip_tags(html_message)
+        
         try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
             messages.success(self.request, f"Staff created. Email sent to {user.email}.")
         except Exception as e:
             print(f"Error sending email: {e}")
@@ -158,10 +168,19 @@ class StaffUnlockView(RoleRequiredMixin, View):
             
             
             # Send Email
+            # Send Email
             subject = "Account Unlocked - University System"
-            message = f"Hello {user.get_full_name()},\n\nYour account has been unlocked. You can now log in."
+            context = {
+                'headline': "Account Unlocked",
+                'body_text': f"Hello {user.get_full_name()},\n\nYour account has been unlocked. You can now log in to the system.",
+                'action_url': request.build_absolute_uri(reverse_lazy('login')),
+                'action_text': "Login Now"
+            }
+            html_message = render_to_string('email/notification.html', context)
+            plain_message = strip_tags(html_message)
+
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
             except Exception as e:
                 print(f"Error sending email: {e}")
 
@@ -189,10 +208,17 @@ class StaffDeactivateView(RoleRequiredMixin, View):
             
             
             # Send Email
+            # Send Email
             subject = "Account Deactivated - University System"
-            message = f"Hello {user.get_full_name()},\n\nYour account has been deactivated.\nReason: {justification}\n\nPlease contact IT support if you believe this is an error."
+            context = {
+                'headline': "Account Deactivated",
+                'body_text': f"Hello {user.get_full_name()},\n\nYour account has been deactivated.\n\nReason: {justification}\n\nPlease contact IT support if you believe this is an error.",
+            }
+            html_message = render_to_string('email/notification.html', context)
+            plain_message = strip_tags(html_message)
+            
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
             except Exception as e:
                 print(f"Error sending email: {e}")
 
@@ -217,10 +243,19 @@ class StaffActivateView(RoleRequiredMixin, View):
             
             
             # Send Email
+            # Send Email
             subject = "Account Activated - University System"
-            message = f"Hello {user.get_full_name()},\n\nYour account has been reactivated. You can now log in."
+            context = {
+                'headline': "Account Reactivated",
+                'body_text': f"Hello {user.get_full_name()},\n\nYour account has been reactivated. You can now log in.",
+                'action_url': request.build_absolute_uri(reverse_lazy('login')),
+                'action_text': "Login Now"
+            }
+            html_message = render_to_string('email/notification.html', context)
+            plain_message = strip_tags(html_message)
+            
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
             except Exception as e:
                 print(f"Error sending email: {e}")
 
@@ -306,10 +341,19 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
             log_action(self.request, self.request.user, "SUBMIT_TASKFORCE", "TaskForce", self.object.pk, "Submitted for approval")
             
             # Send Email to HOD (Confirmation)
+            # Send Email to HOD (Confirmation)
             subject = f"Task Force Submitted: {self.object.name}"
-            message = f"Hello {self.request.user.get_full_name()},\n\nYou have successfully submitted the Task Force '{self.object.name}' for approval."
+            context = {
+                'headline': "Submission Successful",
+                'body_text': f"Hello {self.request.user.get_full_name()},\n\nYou have successfully submitted the Task Force '{self.object.name}' for approval.",
+                'action_url': self.request.build_absolute_uri(reverse_lazy('dashboard:hod_taskforce_list')),
+                'action_text': "View Status"
+            }
+            html_message = render_to_string('email/notification.html', context)
+            plain_message = strip_tags(html_message)
+            
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.request.user.email])
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.request.user.email], html_message=html_message)
             except Exception as e:
                 print(f"Error sending email: {e}")
                 
@@ -386,10 +430,20 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
             
             # Send Email to Chairman
             if self.object.chairman:
+            # Send Email to Chairman
+            if self.object.chairman:
                 subject = f"Task Force Approved: {self.object.name}"
-                message = f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been APPROVED by the PSM.\n\nMonitor your dashboard for further updates."
+                context = {
+                    'headline': "Task Force Approved!",
+                    'body_text': f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been APPROVED by the PSM.\n\nMonitor your dashboard for further updates.",
+                    'action_url': request.build_absolute_uri(reverse_lazy('dashboard:lecturer_taskforce_list')), # Assuming lecturer dashboard
+                    'action_text': "View Task Force"
+                }
+                html_message = render_to_string('email/notification.html', context)
+                plain_message = strip_tags(html_message)
+
                 try:
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email])
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email], html_message=html_message)
                 except Exception as e:
                     print(f"Error sending email: {e}")
 
@@ -406,10 +460,20 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
                 
                 # Send Email to Chairman
                 if self.object.chairman:
+                # Send Email to Chairman
+                if self.object.chairman:
                     subject = f"Task Force Rejected: {self.object.name}"
-                    message = f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been REJECTED by the PSM.\n\nReason:\n{reason}\n\nPlease review and resubmit if applicable."
+                    context = {
+                        'headline': "Task Force Rejected",
+                        'body_text': f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been REJECTED by the PSM.\n\nReason:\n{reason}\n\nPlease review and resubmit if applicable.",
+                         'action_url': request.build_absolute_uri(reverse_lazy('dashboard:lecturer_taskforce_list')),
+                         'action_text': "View Task Force"
+                    }
+                    html_message = render_to_string('email/notification.html', context)
+                    plain_message = strip_tags(html_message)
+
                     try:
-                        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email])
+                        send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email], html_message=html_message)
                     except Exception as e:
                         print(f"Error sending email: {e}")
 

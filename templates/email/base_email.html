@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #5C001F;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 4px solid #F8A617;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            padding: 40px 30px;
+            color: #333333;
+        }
+
+        .footer {
+            background-color: #5C001F;
+            padding: 20px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 12px;
+            border-top: 4px solid #F8A617;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #5C001F;
+            color: #ffffff !important;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: #4a0019;
+        }
+
+        .highlight-box {
+            background-color: #f8f9fa;
+            border: 2px dashed #F8A617;
+            /* Gold dash */
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            text-align: center;
+            margin: 25px 0;
+            color: #5C001F;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: #5C001F;
+            margin-top: 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>University Management System</h1>
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+        <div class="footer">
+            <p style="margin: 0;">&copy; {% now "Y" %} Task Force Management System. All rights reserved.</p>
+            <p style="margin: 5px 0 0 0; opacity: 0.8;">Automated Notification</p>
+        </div>
+    </div>
+</body>
+
+</html>

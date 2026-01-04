@@ -1,0 +1,15 @@
+{% extends "email/base_email.html" %}
+
+{% block content %}
+<h2>{{ headline }}</h2>
+
+<div style="font-size: 16px;">
+    {{ body_text|linebreaks }}
+</div>
+
+{% if action_url %}
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ action_url }}" class="btn">{{ action_text|default:"View Dashboard" }}</a>
+</div>
+{% endif %}
+{% endblock %}

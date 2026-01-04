@@ -1,0 +1,26 @@
+{% extends "email/base_email.html" %}
+
+{% block content %}
+<h2>Welcome to the Team, {{ user.get_full_name }}!</h2>
+
+<p>Your staff account has been successfully created. You can now access the Task Force Management System using the
+    credentials below.</p>
+
+<p><strong>Username:</strong> {{ user.username }}</p>
+
+<p>Here is your temporary password:</p>
+
+<div class="highlight-box">
+    {{ temp_password }}
+</div>
+
+<p style="color: #dc3545; font-size: 14px;">
+    <strong>Important:</strong> You will be required to change this password immediately upon your first login for
+    security purposes.
+</p>
+
+<div style="text-align: center; margin-top: 30px;">
+    <!-- Assuming LOGIN_URL is accessible via context or hardcoded if needed, usually we pass it -->
+    <a href="{{ login_url }}" class="btn">Login to Dashboard</a>
+</div>
+{% endblock %}
