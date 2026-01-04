@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.utils.crypto import get_random_string
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
 from university.models import TaskForce, Department
@@ -85,7 +86,7 @@ class StaffCreateView(RoleRequiredMixin, CreateView):
         user = self.object
         
         # Generate Temp Password
-        temp_password = User.objects.make_random_password()
+        temp_password = get_random_string(10)
         user.set_password(temp_password)
         user.must_change_password = True
         user.save()
@@ -116,7 +117,7 @@ class StaffPasswordResetView(RoleRequiredMixin, View):
         try:
             user = User.objects.get(pk=pk)
             # Generate new temp password
-            temp_password = User.objects.make_random_password()
+            temp_password = get_random_string(10)
             user.set_password(temp_password)
             user.must_change_password = True
             user.save()
