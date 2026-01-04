@@ -9,8 +9,7 @@
             <div class="card-body">
                 <h5 class="card-title text-muted">Total Staff</h5>
                 <h2 class="display-4 fw-bold" style="color: var(--utm-maroon);">{{ staff_count }}</h2>
-                <a href="{% url 'dashboard:staff_list' %}"
-                    class="btn btn-outline-secondary btn-sm stretched-link">Manage Staff</a>
+                <a href="{% url 'dashboard:staff_list' %}" class="btn btn-outline-secondary btn-sm">Manage Staff</a>
             </div>
         </div>
     </div>
@@ -19,8 +18,8 @@
             <div class="card-body">
                 <h5 class="card-title text-muted">Active Task Forces</h5>
                 <h2 class="display-4 fw-bold" style="color: var(--utm-maroon);">{{ taskforce_count }}</h2>
-                <a href="{% url 'dashboard:taskforce_list' %}"
-                    class="btn btn-outline-secondary btn-sm stretched-link">Manage Task Forces</a>
+                <a href="{% url 'dashboard:taskforce_list' %}" class="btn btn-outline-secondary btn-sm">Manage Task
+                    Forces</a>
             </div>
         </div>
     </div>
@@ -29,8 +28,8 @@
             <div class="card-body">
                 <h5 class="card-title text-muted">Departments</h5>
                 <h2 class="display-4 fw-bold" style="color: var(--utm-maroon);">{{ department_count }}</h2>
-                <a href="{% url 'dashboard:department_list' %}"
-                    class="btn btn-outline-secondary btn-sm stretched-link">Manage Departments</a>
+                <a href="{% url 'dashboard:department_list' %}" class="btn btn-outline-secondary btn-sm">Manage
+                    Departments</a>
             </div>
         </div>
     </div>
@@ -39,7 +38,7 @@
             <div class="card-body">
                 <h5 class="card-title text-muted">Audit Logs</h5>
                 <p class="card-text text-muted mb-4">Track system security and user actions.</p>
-                <a href="{% url 'dashboard:audit_log_list' %}" class="btn btn-outline-dark btn-sm stretched-link">View
+                <a href="{% url 'dashboard:audit_log_list' %}" class="btn btn-outline-dark btn-sm">View
                     Logs</a>
             </div>
         </div>
