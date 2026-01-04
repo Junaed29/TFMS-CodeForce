@@ -91,7 +91,7 @@ DATABASES = {
 # Auth
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'dashboard:home'
 LOGOUT_REDIRECT_URL = '/login/'
 
 # Password validation
