@@ -430,8 +430,6 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
             
             # Send Email to Chairman
             if self.object.chairman:
-            # Send Email to Chairman
-            if self.object.chairman:
                 subject = f"Task Force Approved: {self.object.name}"
                 context = {
                     'headline': "Task Force Approved!",
@@ -458,8 +456,6 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
                 self.object.save()
                 log_action(request, request.user, "REJECT_TASKFORCE", "TaskForce", self.object.pk, f"Rejected with reason: {reason}")
                 
-                # Send Email to Chairman
-                if self.object.chairman:
                 # Send Email to Chairman
                 if self.object.chairman:
                     subject = f"Task Force Rejected: {self.object.name}"
