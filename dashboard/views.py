@@ -150,6 +150,47 @@ class StaffUnlockView(RoleRequiredMixin, View):
             
         return redirect('dashboard:staff_list')
 
+class StaffDeactivateView(RoleRequiredMixin, View):
+    required_role = User.Role.ADMIN
+
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            user = User.objects.get(pk=pk)
+            justification = request.POST.get('justification')
+            if not justification:
+                messages.error(request, "Justification is required to deactivate a user.")
+                return redirect(request.META.get('HTTP_REFERER', 'dashboard:staff_list'))
+
+            user.is_active = False
+            user.save()
+            
+            messages.success(request, f"User {user.username} deactivated successfully.")
+            log_action(request, request.user, "DEACTIVATE_USER", "User", user.pk, f"Deactivated user {user.username}. Reason: {justification}")
+            
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+            
+        return redirect('dashboard:staff_list')
+
+class StaffActivateView(RoleRequiredMixin, View):
+    required_role = User.Role.ADMIN
+
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            user = User.objects.get(pk=pk)
+            user.is_active = True
+            user.is_locked = False # Also unlock if they were locked
+            user.failed_attempts = 0
+            user.save()
+            
+            messages.success(request, f"User {user.username} activated successfully.")
+            log_action(request, request.user, "ACTIVATE_USER", "User", user.pk, f"Activated user {user.username}")
+            
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+            
+        return redirect('dashboard:staff_list')
+
 # --- Admin Task Force Management ---
 class TaskForceListView(RoleRequiredMixin, ListView):
     model = TaskForce

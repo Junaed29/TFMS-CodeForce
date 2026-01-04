@@ -39,13 +39,15 @@
                                 {% if staff.is_locked %}
                                 <form action="{% url 'dashboard:staff_unlock' staff.pk %}" method="post">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-warning text-dark fw-bold">
-                                        <i class="bi bi-unlock-fill"></i> Unlock
+                                    <button type="submit" class="btn btn-sm btn-warning text-dark fw-bold"
+                                        title="Unlock Account">
+                                        <i class="bi bi-unlock-fill"></i>
                                     </button>
                                 </form>
                                 {% endif %}
+
                                 <a href="{% url 'dashboard:staff_edit' staff.pk %}"
-                                    class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    class="btn btn-sm btn-outline-secondary" title="Edit User">Edit</a>
                             </div>
                         </td>
                     </tr>

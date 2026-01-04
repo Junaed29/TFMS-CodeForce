@@ -39,7 +39,24 @@
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                         {% if is_edit %}
-                        <button type="button" class="btn btn-warning me-auto" data-bs-toggle="modal"
+
+                        {# Deactivate/Activate Actions #}
+                        {% if form.instance.is_active %}
+                        <button type="button" class="btn btn-danger me-auto" data-bs-toggle="modal"
+                            data-bs-target="#deactivateModal">
+                            <i class="bi bi-person-x-fill me-1"></i>Deactivate
+                        </button>
+                        {% else %}
+                        <div class="me-auto d-flex gap-2">
+                            <span class="badge bg-danger align-self-center">Inactive</span>
+                            <!-- Activate Form -->
+                            <button type="submit" form="activateForm" class="btn btn-success">
+                                <i class="bi bi-person-check-fill me-1"></i>Activate
+                            </button>
+                        </div>
+                        {% endif %}
+
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal"
                             data-bs-target="#resetPasswordModal">
                             <i class="bi bi-key me-1"></i>Reset Password
                         </button>
@@ -49,6 +66,14 @@
                             Staff Member{% endif %}</button>
                     </div>
                 </form>
+
+                {# Hidden Activate Form #}
+                {% if is_edit and not form.instance.is_active %}
+                <form id="activateForm" action="{% url 'dashboard:staff_activate' form.instance.pk %}" method="post"
+                    style="display:none;">
+                    {% csrf_token %}
+                </form>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -76,6 +101,38 @@
                     <button type="submit" class="btn btn-warning fw-bold">Reset Password</button>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Deactivate Modal #}
+{% if is_edit and form.instance.is_active %}
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Deactivate Staff Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form action="{% url 'dashboard:staff_deactivate' form.instance.pk %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate <strong>{{ form.instance.username }}</strong>?</p>
+                    <p class="text-muted small">This will prevent the user from logging in. This
+                        action is logged.</p>
+                    <div class="mb-3">
+                        <label for="justification" class="form-label fw-bold">Justification (Required)*</label>
+                        <textarea class="form-control" name="justification" id="justification" rows="3" required
+                            placeholder="Enter reason for deactivation..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Deactivate User</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
