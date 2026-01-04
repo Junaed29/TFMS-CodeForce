@@ -7,7 +7,7 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    path('', RedirectView.as_view(url='accounts/login/', permanent=False)),  # Redirect root to login
+    path('', RedirectView.as_view(pattern_name='dashboard:home', permanent=False)),  # Redirect root to dashboard (dispatcher)
     
     path('dashboard/', include('dashboard.urls')),
     

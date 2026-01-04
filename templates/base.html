@@ -17,9 +17,8 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark navbar-custom mb-4">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="/">
+      <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard:home' %}">
         <img src="{% static 'images/UTM-LOGO-FULL.png' %}" alt="UTM Logo" class="bg-white rounded p-1">
-        <span>TFMS</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
         <span class="navbar-toggler-icon"></span>
@@ -27,6 +26,12 @@
       <div class="collapse navbar-collapse" id="navbarContent">
         <ul class="navbar-nav ms-auto align-items-center">
           {% if user.is_authenticated %}
+          <li class="nav-item me-3">
+            <a href="{% url 'dashboard:home' %}"
+              class="btn btn-light btn-sm d-flex align-items-center fw-bold text-maroon">
+              <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+          </li>
           <li class="nav-item">
             <span class="nav-link text-white">
               <strong>{{ user.get_role_display }}</strong> | {{ user.username }}
@@ -57,7 +62,7 @@
       <div class="mb-2">
         <img src="{% static 'images/OurCompanyLogo.png' %}" alt="Company Logo" style="height: 30px;"
           class="bg-white rounded p-1 me-2">
-        <small>&copy; 2026 University Management System</small>
+        <small>&copy; 2026 Task Force Management System</small>
       </div>
     </div>
   </footer>
