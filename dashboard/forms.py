@@ -13,16 +13,22 @@ class DepartmentForm(forms.ModelForm):
         }
 
 class StaffForm(forms.ModelForm):
+    first_name = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),
+        required=True,
+        empty_label="Select Department",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'role', 'department', 'is_locked']
         widgets = {
              'username': forms.TextInput(attrs={'class': 'form-control'}),
-             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
              'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-             'email': forms.EmailInput(attrs={'class': 'form-control'}),
              'role': forms.Select(attrs={'class': 'form-select'}),
-             'department': forms.Select(attrs={'class': 'form-select'}),
              'is_locked': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
