@@ -24,6 +24,8 @@ class CustomLoginView(LoginView):
             user.save()
             
         if user.must_change_password:
+            from django.contrib.auth import login
+            login(self.request, user)
             return redirect('force_password_change')
             
         return super().form_valid(form)
