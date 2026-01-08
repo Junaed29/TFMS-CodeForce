@@ -93,3 +93,12 @@ class ForcePasswordChangeView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 from accounts.utils import log_action
+from django.contrib.auth import views as auth_views
+
+class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    def form_valid(self, form):
+        user = form.save()
+        user.must_change_password = False
+        user.save()
+        log_action(self.request, user, "RESET_PASSWORD_CONFIRM", "User", user.pk, "User reset password via email link")
+        return super().form_valid(form)
