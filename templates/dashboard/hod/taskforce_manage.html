@@ -82,7 +82,7 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Current Roster</h5>
+                    <h5 class="fw-bold mb-0">Current Members</h5>
                     <span class="badge bg-light text-secondary border" id="count-badge">0 Assigned</span>
                 </div>
 
@@ -103,7 +103,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light text-secondary text-uppercase text-xs tracking-wide">
                                 <tr>
-                                    <th class="ps-4 py-3 border-0" style="width: 40%">Member</th>
+                                    <th class="ps-4 py-3 border-0 small" style="width: 40%">Member</th>
                                     <th class="py-3 border-0" style="width: 35%">Workload Status</th>
                                     <th class="text-end pe-4 py-3 border-0">Action</th>
                                 </tr>
@@ -422,7 +422,7 @@
                         ${getInitials(staff.name)}
                     </div>
                     <div>
-                        <div class="fw-bold text-dark">${staff.name}</div>
+                        <div class="fw-bold text-dark small">${staff.name}</div>
                         <div class="small text-muted">${staff.email}</div>
                         ${membershipState ? `
                         <span class="badge ${membershipState.badge} mt-1">${membershipState.label}</span>
