@@ -3,121 +3,151 @@
 {% block title %}Manage Membership{% endblock %}
 
 {% block content %}
-<div class="container-fluid" id="manage-app">
-    <div class="row justify-content-center">
-        <div class="col-md-11">
-            <div class="card shadow-sm">
-                <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Manage Membership: {{ taskforce.name }}</h4>
-                    <span class="badge bg-light text-dark">{{ taskforce.get_status_display }}</span>
+<div class="container-fluid py-4" id="manage-app">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-gray-800 mb-1">Manage Membership</h1>
+            <p class="text-muted mb-0">
+                Task Force: <span class="fw-semibold text-dark">{{ taskforce.name }}</span>
+            </p>
+        </div>
+        <div>
+            <span class="badge rounded-pill bg-white text-dark border px-3 py-2 shadow-sm">
+                <i
+                    class="bi bi-circle-fill text-{{ taskforce.status|lower|yesno:'success,secondary,warning' }} me-1 small"></i>
+                {{ taskforce.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT PANEL: Actions -->
+        <div class="col-lg-4">
+            <!-- Instructions Card -->
+            <div class="card border-0 shadow-sm mb-4 bg-primary-subtle">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <i class="bi bi-info-circle-fill text-primary fs-4 me-3"></i>
+                        <div>
+                            <h6 class="fw-bold text-primary mb-1">Workflow Guide</h6>
+                            <p class="small text-muted mb-0">
+                                1. Add members to the roster.<br>
+                                2. Monitor workload impact.<br>
+                                3. If <strong>Overloaded</strong>, justification is required.<br>
+                                4. Submit for PSM approval.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Member Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h6 class="fw-bold mb-0">Add Member</h6>
                 </div>
                 <div class="card-body">
-                    <!-- Instructions -->
-                    <div class="alert alert-info py-2">
-                        <small>
-                            <i class="bi bi-info-circle-fill me-1"></i>
-                            <strong>Workflow:</strong> Add members → Check Workload → Save Draft (Work in Progress) →
-                            Submit (Finalize).
-                            <br>
-                            If a member is <strong>Overloaded</strong>, you must provide a justification to submit.
-                        </small>
+                    <div class="mb-3">
+                        <label class="form-label text-uppercase small fw-bold text-muted tracking-wide">Select
+                            Lecturer</label>
+                        <div class="input-group">
+                            <select class="form-select form-select-sm bg-light border-0 small" id="memberSelect">
+                                <option value="">Loading staff...</option>
+                                <!-- Populated via API -->
+                            </select>
+                            <button type="button" class="btn btn-primary px-4" id="addMemberBtn">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <form method="post" id="mainForm">
-                        {% csrf_token %}
-                        <!-- Hidden inputs to store actual selection for Django Form -->
-                        <!-- We will sync JS state to these inputs before submit -->
-                        <div id="hidden-inputs">
-                            <!-- Chairman Removed -->
-                            <!-- Members (Multiple) -->
-                            <select name="members" id="id_members" multiple class="d-none">
-                                {% for id in form.members.value %}
-                                <option value="{{ id }}" selected>{{ id }}</option>
-                                {% endfor %}
-                            </select>
-                            <!-- Justification -->
-                            <input type="hidden" name="justification" id="id_justification">
+                    <!-- Live Preview Box -->
+                    <div id="selection-preview" class="min-h-50">
+                        <!-- Content injected via JS -->
+                    </div>
+                </div>
+            </div>
 
-                            <!-- Action button value -->
-                            <input type="hidden" name="action" id="form-action" value="">
-                        </div>
+            <!-- Task Force Stats -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <span class="text-muted fw-medium">Task Force Weightage</span>
+                    <span class="badge bg-dark rounded-pill px-3 py-2">{{ taskforce.weightage }} Points</span>
+                </div>
+            </div>
+        </div>
 
-                        <div class="row">
-                            <!-- LEFT PANEL: Add Members -->
-                            <div class="col-md-4 border-end">
-                                <h5 class="fw-bold mb-3">Add Members</h5>
+        <!-- RIGHT PANEL: Current Roster -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Current Roster</h5>
+                    <span class="badge bg-light text-secondary border" id="count-badge">0 Assigned</span>
+                </div>
 
-                                <!-- Chairman Selection Removed -->
+                <form method="post" id="mainForm" class="d-flex flex-column h-100">
+                    {% csrf_token %}
+                    <!-- Hidden inputs for state sync -->
+                    <div id="hidden-inputs">
+                        <select name="members" id="id_members" multiple class="d-none">
+                            {% for id in form.members.value %}
+                            <option value="{{ id }}" selected>{{ id }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="justification" id="id_justification">
+                        <input type="hidden" name="action" id="form-action" value="">
+                    </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label text-muted small">Add Committee Member</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="memberSelect">
-                                            <option value="">-- Select Lecturer --</option>
-                                            <!-- Populated via API -->
-                                        </select>
-                                        <button type="button" class="btn btn-outline-success" id="addMemberBtn">
-                                            <i class="bi bi-plus-lg"></i> Add
-                                        </button>
-                                    </div>
-                                    <div id="selection-preview" class="mt-2 small text-muted">
-                                        <!-- Live preview of selected staff status -->
-                                    </div>
-                                </div>
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-secondary text-uppercase text-xs tracking-wide">
+                                <tr>
+                                    <th class="ps-4 py-3 border-0" style="width: 40%">Member</th>
+                                    <th class="py-3 border-0" style="width: 35%">Workload Status</th>
+                                    <th class="text-end pe-4 py-3 border-0">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roster-body" class="border-top-0">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+
+                        <!-- Empty State (Visible when 0 members) -->
+                        <div id="empty-state" class="text-center py-5 d-none">
+                            <div class="mb-3 text-muted opacity-50">
+                                <i class="bi bi-people fs-1"></i>
                             </div>
-
-                            <!-- RIGHT PANEL: Current Roster -->
-                            <div class="col-md-8">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="fw-bold m-0">Current Members</h5>
-                                    <span class="badge bg-secondary" id="count-badge">0 Members</span>
-                                </div>
-
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th style="width: 5%">Role</th>
-                                                <th>Name</th>
-                                                <th style="width: 25%">Workload Impact</th>
-                                                <th style="width: 10%">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="roster-body">
-                                            <!-- Populated via JS -->
-                                        </tbody>
-                                        <tfoot>
-                                            <tr class="table-active fw-bold">
-                                                <td colspan="2" class="text-end">Task Force Weightage:</td>
-                                                <td colspan="2">{{ taskforce.weightage }} Points</td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
+                            <h6 class="text-muted">No members assigned yet</h6>
+                            <p class="small text-muted">Use the panel on the left to add staff.</p>
                         </div>
+                    </div>
 
-                        <!-- Footer Actions -->
-                        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                            <a href="{% url 'dashboard:hod_taskforce_list' %}" class="btn btn-secondary me-2">Close</a>
+                    <!-- Footer Actions -->
+                    <div class="card-footer bg-white mt-auto py-3 border-top">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'dashboard:hod_taskforce_list' %}"
+                                class="btn btn-light text-muted">Cancel</a>
 
                             {% if taskforce.status == 'ACTIVE' or taskforce.status == 'DRAFT' or taskforce.status == 'REJECTED' or taskforce.status == 'SUBMITTED' %}
-                            <button type="button" onclick="submitForm('save_draft')"
-                                class="btn btn-outline-primary me-2">
-                                <i class="bi bi-save"></i> Save Draft
+                            <button type="button" onclick="submitForm('save_draft')" class="btn btn-outline-secondary">
+                                Save Draft
                             </button>
-                            <button type="button" onclick="trySubmit()" class="btn btn-utm-primary">
-                                <i class="bi bi-send-check"></i>
-                                {% if taskforce.status == 'SUBMITTED' %}Update Submission{% else %}Submit for Approval{% endif %}
+                            <button type="button" onclick="trySubmit()" class="btn btn-primary px-4 fw-bold">
+                                {% if taskforce.status == 'SUBMITTED' %}
+                                Update Submission
+                                {% else %}
+                                Submit for Approval
+                                {% endif %}
                             </button>
                             {% else %}
                             <button disabled class="btn btn-secondary">
-                                <i class="bi bi-lock-fill"></i> Locked ({{ taskforce.get_status_display }})
+                                <i class="bi bi-lock-fill me-1"></i> Locked
                             </button>
                             {% endif %}
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -156,18 +186,13 @@
 {% block extra_js %}
 <script>
     // State
-    const API_URL = "{% url 'dashboard:staff_list_api' %}?department_id={{ taskforce.departments.first.id|default:'' }}"; // Assume single dept for HOD
+    const API_URL = "{% url 'dashboard:staff_list_api' %}?department_id={{ request.user.department.id|default:'' }}";
     const TF_WEIGHT = {{ taskforce.weightage }};
 
-    // Parse the members carefully. If it's a list string like ['1', '2'], we need to handle it.
-    // Django template `form.members.value` usually returns a list of IDs if bound, or None.
-    const INITIAL_MEMBER_IDS = [
-        {% for id in form.members.value %}
-    "{{ id }}",
-        {% endfor %}
-    ];
+    // Preloaded members (includes those outside HOD's department)
+    const PRELOADED_MEMBERS = {{ current_members_json| safe }};
 
-    let staffList = []; // All fetched staff
+    let staffRegistry = {}; // ID -> Member Object (Global lookup)
     let selectedMembers = new Set(); // Set of IDs
 
     // Elements
@@ -178,14 +203,21 @@
 
     // -- Init --
     document.addEventListener('DOMContentLoaded', async () => {
-        await loadStaff();
-
-        // Restore state
-        INITIAL_MEMBER_IDS.forEach(id => {
-            if (id) addMember(id);
+        // 1. Initialize Registry with existing members
+        PRELOADED_MEMBERS.forEach(m => {
+            addToRegistry(m);
+            selectedMembers.add(String(m.id));
         });
 
-        // Listeners
+        // 2. Render initial roster immediately (no wait for API)
+        renderRoster();
+
+        // 3. Load candidates for dropdown
+        await loadStaff();
+    });
+
+    // Listeners
+    document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('addMemberBtn').addEventListener('click', () => {
             const id = memberSelect.value;
             if (id) addMember(id);
@@ -197,24 +229,33 @@
         });
     });
 
+    function addToRegistry(member) {
+        // key by ID (string to be safe)
+        staffRegistry[member.id] = member;
+    }
+
     async function loadStaff() {
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
-            staffList = data.staff;
-            populateDropdowns();
+
+            // Add candidates to registry (if not already there)
+            data.staff.forEach(s => addToRegistry(s));
+
+            // Populate Dropdown with candidates
+            populateDropdowns(data.staff);
         } catch (e) {
             console.error("Failed to load staff", e);
             alert("Error loading staff list. Please refresh.");
         }
     }
 
-    function populateDropdowns() {
+    function populateDropdowns(candidates) {
         // Clear options
         memberSelect.innerHTML = '<option value="">-- Select Lecturer --</option>';
 
-        staffList.forEach(s => {
-            // Member Dropdown
+        candidates.forEach(s => {
+            // Only add if not already selected? Or just add all
             const optM = document.createElement('option');
             optM.value = s.id;
             optM.textContent = s.name;
@@ -223,15 +264,36 @@
     }
 
     function updatePreview(id) {
+        const previewEl = document.getElementById('selection-preview');
         if (!id) {
-            previewDiv.innerHTML = '';
+            previewEl.innerHTML = `
+                <div class="text-center py-4 bg-light rounded mt-3 border border-dashed">
+                    <div class="text-muted small">Select a lecturer to view their workload status</div>
+                </div>
+            `;
             return;
         }
-        const s = staffList.find(x => x.id == id);
+        const s = staffRegistry[id];
         if (!s) return;
 
         let badge = getBadge(s.workload.status);
-        previewDiv.innerHTML = `Current Status: <span class="badge ${badge}">${s.workload.message}</span>`;
+        let icon = s.workload.status === 'OVERLOADED' ? 'exclamation-triangle-fill' : 'check-circle-fill';
+
+        previewEl.innerHTML = `
+            <div class="card border mt-3 bg-light animate__animated animate__fadeIn">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge ${badge} me-2"><i class="bi bi-${icon}"></i> ${s.workload.status}</span>
+                    </div>
+                    <div class="small">
+                        <strong>Current:</strong> ${s.workload.message}
+                    </div>
+                    <div class="small text-muted mt-1">
+                        + ${TF_WEIGHT} (Task Force)
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     // -- Actions --
@@ -261,7 +323,7 @@
 
         // Render Members
         selectedMembers.forEach(id => {
-            const s = staffList.find(x => x.id == id);
+            const s = staffRegistry[id]; // Look up in global registry
             if (s) {
                 const row = createRow(s, 'Member');
                 rosterBody.appendChild(row.el);
@@ -283,22 +345,34 @@
         const badgeClass = getBadge(status);
 
         tr.innerHTML = `
-            <td><span class="badge bg-secondary">${roleLabel}</span></td>
-            <td>
-                <div class="fw-bold">${staff.name}</div>
-                <div class="small text-muted">${staff.email}</div>
+            <td class="ps-4">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-circle me-3 bg-light text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px;">
+                        ${getInitials(staff.name)}
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">${staff.name}</div>
+                        <div class="small text-muted">${staff.email}</div>
+                    </div>
+                </div>
             </td>
             <td>
-                <span class="badge ${badgeClass}">${msg}</span>
-                ${isOver ? '<i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="Overloaded"></i>' : ''}
+                <span class="badge ${badgeClass} rounded-pill px-3 py-2 fw-normal">
+                    ${isOver ? '<i class="bi bi-exclamation-triangle-fill me-1"></i>' : '<i class="bi bi-activity me-1"></i>'}
+                    ${msg}
+                </span>
             </td>
-            <td>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMember('${staff.id}')">
-                    <i class="bi bi-x-lg"></i> Remove
+            <td class="text-end pe-4">
+                <button type="button" class="btn btn-light btn-sm text-danger hover-bg-danger-subtle" onclick="removeMember('${staff.id}')" title="Remove Member">
+                    <i class="bi bi-trash"></i>
                 </button>
             </td>
         `;
         return { el: tr, isOverloaded: isOver };
+    }
+
+    function getInitials(name) {
+        return name.match(/(\b\S)?/g).join("").match(/(^\S|\S$)?/g).join("").toUpperCase();
     }
 
     function getBadge(status) {

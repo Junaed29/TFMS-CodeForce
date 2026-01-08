@@ -363,6 +363,27 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
         kwargs['department'] = self.request.user.department
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from university.services import WorkloadService
+        import json
+        
+        # Serialize Members
+        members_data = []
+        for member in self.object.members.all():
+            # Calculate workload (including this task force as they are already a member)
+            status = WorkloadService.get_workload_status(member)
+            members_data.append({
+                'id': member.id,
+                'name': member.get_full_name() or member.username,
+                'email': member.email,
+                'role': member.get_role_display(),
+                'workload': status
+            })
+        
+        context['current_members_json'] = json.dumps(members_data)
+        return context
+
     def form_valid(self, form):
         action = self.request.POST.get('action')
         
