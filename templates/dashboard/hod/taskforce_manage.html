@@ -129,7 +129,7 @@
                             <a href="{% url 'dashboard:hod_taskforce_list' %}"
                                 class="btn btn-light text-muted">Cancel</a>
 
-                            {% if taskforce.status == 'ACTIVE' or taskforce.status == 'DRAFT' or taskforce.status == 'REJECTED' or taskforce.status == 'SUBMITTED' %}
+                            {% if taskforce.status == 'ACTIVE' or taskforce.status == 'DRAFT' or taskforce.status == 'REJECTED' %}
                             <button type="button" onclick="submitForm('save_draft')" class="btn btn-outline-secondary">
                                 Save Draft
                             </button>

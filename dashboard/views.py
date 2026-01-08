@@ -353,7 +353,7 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
     context_object_name = "taskforce"
     required_role = User.Role.HOD
     success_url = reverse_lazy('dashboard:hod_taskforce_list')
-    locked_statuses = {'APPROVED', 'SUBMITTED'}
+    locked_statuses = {'APPROVED', 'SUBMITTED', 'INACTIVE'}
 
     def get_queryset(self):
         # Ensure HOD can only edit task forces for their department
@@ -364,7 +364,7 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         if self.object.status in self.locked_statuses:
-            messages.error(request, "This task force is locked while submitted or approved.")
+            messages.error(request, "This task force is locked while submitted, approved, or inactive.")
             return redirect('dashboard:hod_taskforce_list')
         return super().dispatch(request, *args, **kwargs)
 

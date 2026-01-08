@@ -124,6 +124,15 @@ class TaskForceForm(forms.ModelForm):
             
         return weightage
 
+    def save(self, commit=True):
+        prev_status = None
+        if self.instance.pk:
+            prev_status = TaskForce.objects.filter(pk=self.instance.pk).values_list('status', flat=True).first()
+        instance = super().save(commit=commit)
+        if commit and instance.status == 'INACTIVE' and prev_status != 'INACTIVE':
+            instance.members.clear()
+        return instance
+
 class TaskForceMembershipForm(forms.ModelForm):
     class Meta:
         model = TaskForce
@@ -138,10 +147,20 @@ class TaskForceMembershipForm(forms.ModelForm):
         if department:
             # Only show staff from the HOD's department for Members
             staff_qs = User.objects.filter(
+                is_active=True,
                 department=department,
                 role__in=[User.Role.LECTURER, User.Role.DEAN, User.Role.HOD, User.Role.PSM]
             )
             # Keep existing members selectable even if they belong to other departments.
             if self.instance.pk:
-                staff_qs = staff_qs | self.instance.members.all()
+                staff_qs = staff_qs | self.instance.members.filter(is_active=True)
             self.fields['members'].queryset = staff_qs.distinct()
+
+    def clean_members(self):
+        members = self.cleaned_data.get('members')
+        if members is None:
+            return members
+        inactive = members.filter(is_active=False)
+        if inactive.exists():
+            raise forms.ValidationError("All selected members must be active staff.")
+        return members
