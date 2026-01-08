@@ -318,9 +318,12 @@ class HODDashboardView(RoleRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.department:
-            context['taskforce_count'] = TaskForce.objects.filter(departments=self.request.user.department).count()
+            taskforces = TaskForce.objects.filter(departments=self.request.user.department).distinct()
+            context['taskforce_count'] = taskforces.count()
+            context['taskforces'] = taskforces
         else:
             context['taskforce_count'] = 0
+            context['taskforces'] = TaskForce.objects.none()
         return context
 
 from django.views.generic import ListView, CreateView, UpdateView
