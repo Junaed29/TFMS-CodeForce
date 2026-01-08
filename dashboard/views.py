@@ -282,6 +282,11 @@ class TaskForceCreateView(RoleRequiredMixin, CreateView):
     success_url = reverse_lazy('dashboard:taskforce_list')
     required_role = User.Role.ADMIN
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        log_action(self.request, self.request.user, "CREATE_TASKFORCE", "TaskForce", self.object.pk, f"Created task force {self.object.name}")
+        return response
+
 class TaskForceUpdateView(RoleRequiredMixin, UpdateView):
     model = TaskForce
     form_class = TaskForceForm
@@ -293,6 +298,18 @@ class TaskForceUpdateView(RoleRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['title'] = "Edit Task Force"
         return context
+
+    def form_valid(self, form):
+        prev_status = TaskForce.objects.filter(pk=self.object.pk).values_list('status', flat=True).first()
+        response = super().form_valid(form)
+        new_status = self.object.status
+        if prev_status != new_status and new_status == 'INACTIVE':
+            log_action(self.request, self.request.user, "DEACTIVATE_TASKFORCE", "TaskForce", self.object.pk, f"Deactivated task force {self.object.name}")
+        elif prev_status != new_status and prev_status == 'INACTIVE' and new_status == 'ACTIVE':
+            log_action(self.request, self.request.user, "ACTIVATE_TASKFORCE", "TaskForce", self.object.pk, f"Activated task force {self.object.name}")
+        else:
+            log_action(self.request, self.request.user, "UPDATE_TASKFORCE", "TaskForce", self.object.pk, f"Updated task force {self.object.name}")
+        return response
 
 class WorkloadSettingsView(RoleRequiredMixin, UpdateView):
     model = WorkloadSettings
