@@ -8,6 +8,7 @@ from .views import (
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
     LecturerTaskForceListView, DeanReportView, AuditLogListView, WorkloadSettingsView
 )
+from .api import staff_list_api
 
 app_name = 'dashboard'
 
@@ -32,6 +33,9 @@ urlpatterns = [
     path('admin/department/<int:pk>/edit/', DepartmentUpdateView.as_view(), name='department_edit'),
     path('admin/settings/workload/', WorkloadSettingsView.as_view(), name='workload_settings'),
 
+    # API
+    path('api/staff/', staff_list_api, name='staff_list_api'),
+    
     # HOD Views
     path('hod/', HODDashboardView.as_view(), name='hod'),
     path('hod/taskforce/', HODTaskForceListView.as_view(), name='hod_taskforce_list'),

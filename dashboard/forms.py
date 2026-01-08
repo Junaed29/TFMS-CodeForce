@@ -127,9 +127,8 @@ class TaskForceForm(forms.ModelForm):
 class TaskForceMembershipForm(forms.ModelForm):
     class Meta:
         model = TaskForce
-        fields = ['chairman', 'members']
+        fields = ['members']
         widgets = {
-            'chairman': forms.Select(attrs={'class': 'form-select'}),
             'members': forms.CheckboxSelectMultiple(),
         }
     
@@ -137,7 +136,6 @@ class TaskForceMembershipForm(forms.ModelForm):
         department = kwargs.pop('department', None)
         super().__init__(*args, **kwargs)
         if department:
-            # Only show staff from the HOD's department for both Chairman and Members
+            # Only show staff from the HOD's department for Members
             staff_qs = User.objects.filter(department=department, role__in=[User.Role.LECTURER, User.Role.DEAN, User.Role.HOD, User.Role.PSM])
             self.fields['members'].queryset = staff_qs
-            self.fields['chairman'].queryset = staff_qs

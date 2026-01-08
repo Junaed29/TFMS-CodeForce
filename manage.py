@@ -2,10 +2,15 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-import dotenv
+
+try:
+    import dotenv
+except ImportError:
+    dotenv = None
 
 def main():
-    dotenv.load_dotenv()
+    if dotenv:
+        dotenv.load_dotenv()
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tfms_core.settings')
     try:

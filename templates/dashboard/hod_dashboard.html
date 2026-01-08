@@ -3,14 +3,58 @@
 {% block title %}HOD Dashboard{% endblock %}
 
 {% block content %}
-<div class="card border-success mb-3">
-    <div class="card-header bg-success text-white">HOD Area</div>
-    <div class="card-body text-success">
-        <h5 class="card-title">Department Management</h5>
-        <p class="card-text">Oversee department activities and staff.</p>
+<div class="row">
+    <div class="col-12 mb-4">
+        <h2 class="fw-bold">Welcome, {{ user.get_full_name }}</h2>
+        <p class="text-muted">Manage your department's task forces and staff workloads.</p>
     </div>
-    <div class="card-footer bg-transparent border-0">
-        <a href="{% url 'dashboard:hod_taskforce_list' %}" class="btn btn-sm btn-light w-100">View Details</a>
+</div>
+
+<div class="row">
+    <!-- Task Force Management Card -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card shadow-sm h-100 border-start border-primary border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title fw-bold mb-0">Task Forces</h5>
+                    <div class="icon-shape bg-light text-primary rounded-circle p-2">
+                        <i class="bi bi-list-task fs-4"></i>
+                    </div>
+                </div>
+                <p class="card-text text-muted">
+                    Create, manage membership, and submit task forces for approval.
+                </p>
+                <div class="d-flex align-items-center mb-3">
+                    <h2 class="fw-bold mb-0 me-2">{{ taskforce_count }}</h2>
+                    <span class="text-secondary small">Total Task Forces</span>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 pb-3">
+                <a href="{% url 'dashboard:hod_taskforce_list' %}" class="btn btn-primary w-100">
+                    <i class="bi bi-gear-fill me-2"></i> Manage Task Forces
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Future Card: Staff Overview (Placeholder) -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card shadow-sm h-100 border-start border-info border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title fw-bold mb-0">Staff Workload</h5>
+                    <div class="icon-shape bg-light text-info rounded-circle p-2">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                </div>
+                <p class="card-text text-muted">
+                    Overview of department staff and their current workload status.
+                </p>
+            </div>
+            <div class="card-footer bg-white border-0 pb-3">
+                <button class="btn btn-outline-info w-100" disabled>Coming Soon</button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

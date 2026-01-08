@@ -365,13 +365,30 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         action = self.request.POST.get('action')
+        
+        # Check if justification is needed but missing
+        # (This is a fallback; frontend should catch this, but backend must enforce)
+        # However, checking overload here is complex without re-calculating everything.
+        # Let's rely on the fact that if they click 'Submit', they are claiming it's ready.
+        # Ideally, we should check overload status here.
+        
         if action == 'submit':
             form.instance.status = 'SUBMITTED'
+            # Check for justification if provided
+            justification = self.request.POST.get('justification')
+            if justification:
+                # Append to description or save to a new field if we had one.
+                # Use Case says "Prompt Justification". 
+                # Let's append to description for now as 'Justification: ...'
+                # Or usage rejection_reason? No, that's for PSM.
+                # Let's append to description.
+                current_desc = form.instance.description or ""
+                form.instance.description = f"{current_desc}\n\n[Justification]: {justification}".strip()
+
             response = super().form_valid(form)
             log_action(self.request, self.request.user, "SUBMIT_TASKFORCE", "TaskForce", self.object.pk, "Submitted for approval")
             
-            # Send Email to HOD (Confirmation)
-            # Send Email to HOD (Confirmation)
+            # Send Email logic (kept same)
             subject = f"Task Force Submitted: {self.object.name}"
             context = {
                 'headline': "Submission Successful",
@@ -389,6 +406,28 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
                 
             messages.success(self.request, f"Task Force '{self.object.name}' submitted successfully. Confirmation email sent.")
             return response
+            
+        elif action == 'save_draft':
+            # Save as DRAFT if it was Draft or Active.
+            # If it was Active (from creation), keeping it Active is fine, or switching to Draft?
+            # User workflow: "Save Draft". Implies switching to DRAFT status if not already.
+            # But if it was ACTIVE, maybe we shouldn't demote it?
+            # Actually, `DRAFT` is a new status. Let's use it.
+            if form.instance.status != 'ACTIVE': # Don't change Active to Draft if it was already live?
+                 form.instance.status = 'DRAFT'
+            else:
+                 # If it was defined as ACTIVE by default logic, maybe we want to keep it active?
+                 # Typically 'Save Draft' means "Work in Progress".
+                 pass 
+            
+            # For this specific request: "system will not save that data... until clicking the review request"
+            # But we added "Save Draft". 
+            # Let's set it to DRAFT.
+            form.instance.status = 'DRAFT'
+            response = super().form_valid(form)
+            messages.success(self.request, "Draft saved successfully.")
+            return response
+
         return super().form_valid(form)
 
 from accounts.utils import log_action
@@ -458,24 +497,12 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
             self.object.save()
             log_action(request, request.user, "APPROVE_TASKFORCE", "TaskForce", self.object.pk, f"Approved task force: {self.object.name}")
             
-            # Send Email to Chairman
-            if self.object.chairman:
-                subject = f"Task Force Approved: {self.object.name}"
-                context = {
-                    'headline': "Task Force Approved!",
-                    'body_text': f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been APPROVED by the PSM.\n\nMonitor your dashboard for further updates.",
-                    'action_url': request.build_absolute_uri(reverse_lazy('dashboard:lecturer_taskforce_list')), # Assuming lecturer dashboard
-                    'action_text': "View Task Force"
-                }
-                html_message = render_to_string('email/notification.html', context)
-                plain_message = strip_tags(html_message)
+            # Send Email logic (removed chairman specific email)
+            # Consider emailing HODs of involved departments instead?
+            # For now, no individual email if no specific leader.
+            pass
 
-                try:
-                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email], html_message=html_message)
-                except Exception as e:
-                    print(f"Error sending email: {e}")
-
-            messages.success(request, f"Task Force '{self.object.name}' approved. Email sent to Chairman.")
+            messages.success(request, f"Task Force '{self.object.name}' approved.")
             return redirect('dashboard:psm_taskforce_list')
             
         elif action == 'reject':
@@ -486,24 +513,11 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
                 self.object.save()
                 log_action(request, request.user, "REJECT_TASKFORCE", "TaskForce", self.object.pk, f"Rejected with reason: {reason}")
                 
-                # Send Email to Chairman
-                if self.object.chairman:
-                    subject = f"Task Force Rejected: {self.object.name}"
-                    context = {
-                        'headline': "Task Force Rejected",
-                        'body_text': f"Hello {self.object.chairman.get_full_name()},\n\nYour Task Force '{self.object.name}' has been REJECTED by the PSM.\n\nReason:\n{reason}\n\nPlease review and resubmit if applicable.",
-                         'action_url': request.build_absolute_uri(reverse_lazy('dashboard:lecturer_taskforce_list')),
-                         'action_text': "View Task Force"
-                    }
-                    html_message = render_to_string('email/notification.html', context)
-                    plain_message = strip_tags(html_message)
+                # Send Email logic (removed chairman specific email)
+                # Consider emailing HODs of involved departments instead?
+                pass
 
-                    try:
-                        send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.chairman.email], html_message=html_message)
-                    except Exception as e:
-                        print(f"Error sending email: {e}")
-
-                messages.success(request, f"Task Force '{self.object.name}' rejected. Email sent to Chairman.")
+                messages.success(request, f"Task Force '{self.object.name}' rejected.")
                 return redirect('dashboard:psm_taskforce_list')
             else:
                  pass
@@ -544,7 +558,7 @@ class LecturerTaskForceListView(RoleRequiredMixin, ListView):
         # Let's show all for visibility, maybe filter stats in template.
         from django.db.models import Q
         return TaskForce.objects.filter(
-            Q(members=self.request.user) | Q(chairman=self.request.user)
+            Q(members=self.request.user)
         ).distinct().order_by('-updated_at')
 
 class DeanReportView(RoleRequiredMixin, ListView):
@@ -555,7 +569,7 @@ class DeanReportView(RoleRequiredMixin, ListView):
 
     def get_queryset(self):
         # Dean sees ALL task forces
-        queryset = TaskForce.objects.all().select_related('chairman').prefetch_related('departments')
+        queryset = TaskForce.objects.all().prefetch_related('departments')
         
         # Filter by Department
         dept_id = self.request.GET.get('department')

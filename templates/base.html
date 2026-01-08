@@ -33,9 +33,14 @@
             </a>
           </li>
           <li class="nav-item">
-            <span class="nav-link text-white">
-              <strong>{{ request.user.get_role_display }}</strong> | {{ request.user.username }}
-            </span>
+            <div class="d-flex flex-column align-items-end me-2 text-white" style="line-height: normal;">
+              <span class="d-inline-block">
+                <strong>{{ request.user.get_role_display }}</strong> | {{ request.user.username }}
+              </span>
+              {% if request.user.department %}
+              <small class="text-white-50" style="font-size: 0.75rem;">{{ request.user.department.name }}</small>
+              {% endif %}
+            </div>
           </li>
           <li class="nav-item ms-2">
             <form method="post" action="{% url 'logout' %}">

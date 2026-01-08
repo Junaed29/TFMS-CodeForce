@@ -5,8 +5,30 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+from django.urls import reverse_lazy
+
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
+
+    def get_success_url(self):
+        """
+        Override to prevent redirecting to unauthorized pages (e.g. Admin -> HOD page)
+        if 'next' param is set from a previous session.
+        """
+        url = super().get_success_url()
+        user = self.request.user
+        
+        # If user is authenticated, check for role mismatch in 'next' URL
+        if user.is_authenticated:
+            # If Admin tries to go to HOD area
+            if (user.is_superuser or user.role == User.Role.ADMIN) and '/dashboard/hod/' in url:
+                return reverse_lazy('dashboard:home')
+            
+            # If HOD/Lecturer tries to go to Admin area (less likely to cause 403 loop, but good safety)
+            if user.role != User.Role.ADMIN and not user.is_superuser and '/dashboard/admin/' in url:
+                return reverse_lazy('dashboard:home')
+
+        return url
 
     def form_valid(self, form):
         """

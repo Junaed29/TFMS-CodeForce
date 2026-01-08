@@ -29,15 +29,7 @@
                             </ul>
                         </div>
                         <div>
-                            <h6 class="fw-bold text-uppercase small text-muted">Chairman</h6>
-                            <p class="mb-0">
-                                {% if taskforce.chairman %}
-                                <i class="bi bi-person-badge me-2"></i>{{
-                                taskforce.chairman.get_full_name|default:taskforce.chairman.username }}
-                                {% else %}
-                                <span class="text-danger">Unassigned</span>
-                                {% endif %}
-                            </p>
+                            <!-- Chairman removed -->
                         </div>
                     </div>
                 </div>

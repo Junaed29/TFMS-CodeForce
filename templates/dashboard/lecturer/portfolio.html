@@ -12,8 +12,7 @@
     <div class="row">
         {% for tf in taskforces %}
         <div class="col-md-6 col-lg-4 mb-4">
-            <div
-                class="card h-100 shadow-sm border-start border-4 {% if tf.chairman == request.user %}border-primary{% else %}border-secondary{% endif %}">
+            <div class="card h-100 shadow-sm border-start border-4 border-secondary">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h5 class="card-title text-truncate fw-bold mb-0" title="{{ tf.name }}">{{ tf.name }}</h5>
@@ -23,11 +22,7 @@
                         </span>
                     </div>
 
-                    {% if tf.chairman == request.user %}
-                    <div class="mb-2"><span
-                            class="badge bg-primary-subtle text-primary border border-primary-subtle">You are
-                            Chairman</span></div>
-                    {% endif %}
+                    <!-- Chairman Badge Removed -->
 
                     <p class="card-text text-muted small mt-3">{{ tf.description|truncatewords:20|default:"No
                         description." }}</p>

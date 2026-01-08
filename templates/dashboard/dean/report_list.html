@@ -47,7 +47,7 @@
                     <th>Task Force Name</th>
                     <th>Status</th>
                     <th>Departments</th>
-                    <th>Chairman</th>
+                    <!-- Chairman Removed -->
                     <th>Members</th>
                     <th>Created</th>
                 </tr>
@@ -67,7 +67,7 @@
                         <span class="badge bg-light text-dark border">{{ dept.name }}</span>
                         {% endfor %}
                     </td>
-                    <td>{{ tf.chairman.get_full_name|default:"-" }}</td>
+                    <!-- Chairman Removed -->
                     <td>{{ tf.members.count }}</td>
                     <td>{{ tf.created_at|date:"M d, Y" }}</td>
                 </tr>

@@ -13,6 +13,7 @@ class Department(models.Model):
 class TaskForce(models.Model):
     STATUS_CHOICES = [
         ('ACTIVE', 'Active'),
+        ('DRAFT', 'Draft'),
         ('SUBMITTED', 'Submitted for Approval'),
         ('APPROVED', 'Approved'),
         ('REJECTED', 'Rejected'),
@@ -26,7 +27,6 @@ class TaskForce(models.Model):
     chart_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
     weightage = models.IntegerField(default=5)
     
-    chairman = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='chaired_task_forces')
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='task_force_memberships', blank=True)
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
