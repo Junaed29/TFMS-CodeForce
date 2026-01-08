@@ -471,7 +471,7 @@ class AuditLogListView(RoleRequiredMixin, ListView):
     template_name = "dashboard/admin/audit_log.html"
     context_object_name = "logs"
     required_role = User.Role.ADMIN
-    paginate_by = 50
+    paginate_by = 20
 
     def get_queryset(self):
         queryset = AuditLog.objects.all().select_related('actor')
