@@ -17,7 +17,7 @@ class StaffForm(forms.ModelForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
     department = forms.ModelChoiceField(
         queryset=Department.objects.all(),
-        required=True,
+        required=False,
         empty_label="Select Department",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
@@ -28,8 +28,25 @@ class StaffForm(forms.ModelForm):
         widgets = {
              'username': forms.TextInput(attrs={'class': 'form-control'}),
              'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-             'role': forms.Select(attrs={'class': 'form-select'}),
+             'role': forms.Select(attrs={'class': 'form-select', 'id': 'id_role'}), # Added ID for JS targeting
         }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        role = cleaned_data.get('role')
+        department = cleaned_data.get('department')
+        
+        # Roles requiring department
+        dept_roles = [User.Role.HOD, User.Role.LECTURER]
+        
+        if role in dept_roles and not department:
+            self.add_error('department', f"Department is required for {role}.")
+            
+        # Clear department for roles that don't need it
+        if role not in dept_roles and department:
+            cleaned_data['department'] = None
+            
+        return cleaned_data
 
 class WorkloadSettingsForm(forms.ModelForm):
     class Meta:

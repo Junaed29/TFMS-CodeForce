@@ -137,3 +137,39 @@
 </div>
 {% endif %}
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleSelect = document.getElementById('id_role');
+        const deptSelect = document.getElementById('id_department');
+
+        // Find the container for the department field
+        // Assuming standard Django form rendering wrapped in div.mb-3
+        const deptContainer = deptSelect.closest('.mb-3');
+
+        function toggleDepartment() {
+            const role = roleSelect.value;
+            // Roles that require department: HOD, LECTURER
+            // Note: Update these strings if backend choice values change!
+            const deptRoles = ['HOD', 'LECTURER'];
+
+            if (deptRoles.includes(role)) {
+                deptContainer.style.display = 'block';
+            } else {
+                deptContainer.style.display = 'none';
+                // Optional: clear selection if hidden
+                // deptSelect.value = ''; 
+            }
+        }
+
+        if (roleSelect && deptSelect) {
+            // Initial check
+            toggleDepartment();
+
+            // Listen for changes
+            roleSelect.addEventListener('change', toggleDepartment);
+        }
+    });
+</script>
+{% endblock %}

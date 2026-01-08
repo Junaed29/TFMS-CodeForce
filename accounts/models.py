@@ -4,9 +4,9 @@ from django.db import models
 class User(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
-        HOD = "HOD", "Head of Department"
-        PSM = "PSM", "Project Supervisor/Manager"
-        DEAN = "DEAN", "Dean"
+        HOD = "HOD", "HOD"
+        PSM = "PSM", "PSM"
+        DEAN = "DEAN", "Management"
         LECTURER = "LECTURER", "Lecturer"
 
     role = models.CharField(max_length=50, choices=Role.choices, default=Role.ADMIN)
