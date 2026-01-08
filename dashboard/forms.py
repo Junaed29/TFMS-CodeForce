@@ -71,6 +71,15 @@ class TaskForceForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from university.models import WorkloadSettings
+        
+        # Restrict Status choices for Admin (Create/Deactivate only)
+        # Using the keys from TaskForce.STATUS_CHOICES: 'ACTIVE', 'INACTIVE'
+        allowed_statuses = ['ACTIVE', 'INACTIVE']
+        self.fields['status'].choices = [
+            choice for choice in TaskForce.STATUS_CHOICES 
+            if choice[0] in allowed_statuses
+        ]
+
         settings = WorkloadSettings.objects.first()
         if settings:
             self.fields['weightage'].widget.attrs.update({

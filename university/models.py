@@ -12,7 +12,7 @@ class Department(models.Model):
 
 class TaskForce(models.Model):
     STATUS_CHOICES = [
-        ('ACTIVE', 'Active (Draft)'),
+        ('ACTIVE', 'Active'),
         ('SUBMITTED', 'Submitted for Approval'),
         ('APPROVED', 'Approved'),
         ('REJECTED', 'Rejected'),
