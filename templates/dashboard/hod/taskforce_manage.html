@@ -306,6 +306,19 @@
         };
     }
 
+    function getMembershipState(memberId) {
+        if (preloadedMemberIds.has(String(memberId))) {
+            if (TF_STATUS === 'SUBMITTED') {
+                return { label: 'Pending review', badge: 'bg-warning text-dark' };
+            }
+            if (TF_STATUS === 'DRAFT') {
+                return { label: 'Draft saved', badge: 'bg-secondary' };
+            }
+            return { label: 'Already added', badge: 'bg-primary' };
+        }
+        return { label: 'New (unsaved)', badge: 'bg-info text-dark' };
+    }
+
     function updatePreview(id) {
         const previewEl = document.getElementById('selection-preview');
         if (!id) {
@@ -400,6 +413,7 @@
         const msg = impact.message;
         const isOver = status === 'OVERLOADED';
         const badgeClass = getBadge(status);
+        const membershipState = getMembershipState(staff.id);
 
         tr.innerHTML = `
             <td class="ps-4">
@@ -410,6 +424,9 @@
                     <div>
                         <div class="fw-bold text-dark">${staff.name}</div>
                         <div class="small text-muted">${staff.email}</div>
+                        ${membershipState ? `
+                        <span class="badge ${membershipState.badge} mt-1">${membershipState.label}</span>
+                        ` : ''}
                     </div>
                 </div>
             </td>

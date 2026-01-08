@@ -137,5 +137,11 @@ class TaskForceMembershipForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if department:
             # Only show staff from the HOD's department for Members
-            staff_qs = User.objects.filter(department=department, role__in=[User.Role.LECTURER, User.Role.DEAN, User.Role.HOD, User.Role.PSM])
-            self.fields['members'].queryset = staff_qs
+            staff_qs = User.objects.filter(
+                department=department,
+                role__in=[User.Role.LECTURER, User.Role.DEAN, User.Role.HOD, User.Role.PSM]
+            )
+            # Keep existing members selectable even if they belong to other departments.
+            if self.instance.pk:
+                staff_qs = staff_qs | self.instance.members.all()
+            self.fields['members'].queryset = staff_qs.distinct()

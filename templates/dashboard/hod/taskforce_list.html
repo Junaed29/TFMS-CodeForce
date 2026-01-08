@@ -18,6 +18,14 @@
                     <h5 class="card-title mb-0 text-truncate" title="{{ tf.name }}">{{ tf.name }}</h5>
                     {% if tf.status == 'ACTIVE' %}
                     <span class="badge bg-success">Active</span>
+                    {% elif tf.status == 'DRAFT' %}
+                    <span class="badge bg-secondary">Draft</span>
+                    {% elif tf.status == 'SUBMITTED' %}
+                    <span class="badge bg-warning text-dark">Submitted</span>
+                    {% elif tf.status == 'APPROVED' %}
+                    <span class="badge bg-primary">Approved</span>
+                    {% elif tf.status == 'REJECTED' %}
+                    <span class="badge bg-danger">Rejected</span>
                     {% else %}
                     <span class="badge bg-secondary">Inactive</span>
                     {% endif %}
