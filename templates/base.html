@@ -26,12 +26,14 @@
       <div class="collapse navbar-collapse" id="navbarContent">
         <ul class="navbar-nav ms-auto align-items-center">
           {% if request.user.is_authenticated %}
+          {% if request.user.role != 'HOD' %}
           <li class="nav-item me-3">
             <a href="{% url 'dashboard:home' %}"
               class="btn btn-light btn-sm d-flex align-items-center fw-bold text-maroon">
               <i class="bi bi-speedometer2 me-2"></i> Dashboard
             </a>
           </li>
+          {% endif %}
           <li class="nav-item">
             <div class="d-flex flex-column align-items-end me-2 text-white" style="line-height: normal;">
               <span class="d-inline-block">
