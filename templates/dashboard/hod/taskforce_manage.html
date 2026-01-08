@@ -197,6 +197,7 @@
 
     let staffRegistry = {}; // ID -> Member Object (Global lookup)
     let selectedMembers = new Set(); // Set of IDs
+    let candidateList = []; // Department candidates for dropdown
 
     // Elements
     const rosterBody = document.getElementById('roster-body');
@@ -244,9 +245,10 @@
 
             // Add candidates to registry (if not already there)
             data.staff.forEach(s => addToRegistry(s));
+            candidateList = data.staff;
 
             // Populate Dropdown with candidates
-            populateDropdowns(data.staff);
+            populateDropdowns(candidateList);
         } catch (e) {
             console.error("Failed to load staff", e);
             alert("Error loading staff list. Please refresh.");
@@ -258,6 +260,9 @@
         memberSelect.innerHTML = '<option value="">-- Select Lecturer --</option>';
 
         candidates.forEach(s => {
+            if (selectedMembers.has(String(s.id))) {
+                return;
+            }
             // Only add if not already selected? Or just add all
             const optM = document.createElement('option');
             optM.value = s.id;
@@ -372,11 +377,13 @@
         selectedMembers.add(id);
         memberSelect.value = ""; // Reset dropdown
         previewDiv.innerHTML = "";
+        populateDropdowns(candidateList);
         renderRoster();
     }
 
     function removeMember(id) {
         selectedMembers.delete(id);
+        populateDropdowns(candidateList);
         renderRoster();
     }
 
