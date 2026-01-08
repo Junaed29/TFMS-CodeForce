@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+            <h2 class="h3 fw-bold text-dark">Workload Configuration</h2>
+        </div>
+
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Set Threshold Limits</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger shadow-sm">
+                                {% for error in form.non_field_errors %}
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <div class="mb-4">
+                                <label for="{{ form.min_weightage.id_for_label }}"
+                                    class="form-label fw-bold text-secondary">
+                                    Min Weightage <span class="text-muted fw-normal">(0-30)</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i
+                                            class="bi bi-arrow-down-circle"></i></span>
+                                    {{ form.min_weightage }}
+                                </div>
+                                {% if form.min_weightage.errors %}
+                                <div class="text-danger small mt-1">{{ form.min_weightage.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Staff below this value
+                                    are <strong>Underloaded</strong>.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="{{ form.max_weightage.id_for_label }}"
+                                    class="form-label fw-bold text-secondary">
+                                    Max Weightage <span class="text-muted fw-normal">(0-30)</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-arrow-up-circle"></i></span>
+                                    {{ form.max_weightage }}
+                                </div>
+                                {% if form.max_weightage.errors %}
+                                <div class="text-danger small mt-1">{{ form.max_weightage.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text mt-2"><i class="bi bi-exclamation-circle me-1"></i>Staff above
+                                    this value are <strong>Overloaded</strong>.</div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'dashboard:admin' %}"
+                                    class="btn btn-secondary text-uppercase small fw-bold px-4">Cancel</a>
+                                <button type="submit" class="btn btn-utm-primary px-4 shadow-sm">
+                                    <i class="bi bi-check-lg me-1"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card shadow-sm border-0" style="background-color: #f8f9fa;">
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold text-dark mb-3">Logic Explanation</h5>
+                        <p class="text-muted small mb-4">These thresholds define the three workload states for academic
+                            staff. Adjustments act as global policy changes.</p>
+
+                        <ul class="list-group list-group-flush bg-transparent">
+                            <li class="list-group-item bg-transparent px-0 d-flex align-items-center">
+                                <span class="badge bg-warning text-dark me-3" style="width: 100px;">Underloaded</span>
+                                <span class="small text-muted">Weight &lt; <strong>Min</strong></span>
+                            </li>
+                            <li class="list-group-item bg-transparent px-0 d-flex align-items-center">
+                                <span class="badge bg-success me-3" style="width: 100px;">Balanced</span>
+                                <span class="small text-muted"><strong>Min</strong> ≤ Weight ≤
+                                    <strong>Max</strong></span>
+                            </li>
+                            <li class="list-group-item bg-transparent px-0 d-flex align-items-center">
+                                <span class="badge bg-danger me-3" style="width: 100px;">Overloaded</span>
+                                <span class="small text-muted">Weight &gt; <strong>Max</strong></span>
+                            </li>
+                        </ul>
+
+                        <div class="alert alert-warning mt-4 mb-0 small border-0 shadow-sm" role="alert">
+                            <i class="bi bi-lightbulb-fill me-2"></i>
+                            <strong>Tip:</strong> Keep the range wide enough (e.g., 5-25) to accommodate normal
+                            variations in task force assignments.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

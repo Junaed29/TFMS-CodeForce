@@ -31,16 +31,72 @@ class StaffForm(forms.ModelForm):
              'role': forms.Select(attrs={'class': 'form-select'}),
         }
 
+class WorkloadSettingsForm(forms.ModelForm):
+    class Meta:
+        from university.models import WorkloadSettings
+        model = WorkloadSettings
+        fields = ['min_weightage', 'max_weightage']
+        widgets = {
+            'min_weightage': forms.NumberInput(attrs={'class': 'form-control'}),
+            'max_weightage': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        min_w = cleaned_data.get("min_weightage")
+        max_w = cleaned_data.get("max_weightage")
+        
+        if min_w is not None and max_w is not None:
+            if min_w < 0:
+                self.add_error('min_weightage', "Min weightage cannot be negative.")
+            if max_w > 30:
+                self.add_error('max_weightage', "Max weightage cannot exceed 30.")
+            if min_w >= max_w:
+                raise forms.ValidationError("Max weightage must be greater than Min weightage.")
+                
+        return cleaned_data
+
 class TaskForceForm(forms.ModelForm):
     class Meta:
         model = TaskForce
-        fields = ['name', 'departments', 'description', 'status']
+        fields = ['name', 'departments', 'description', 'status', 'weightage']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'departments': forms.CheckboxSelectMultiple(),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'status': forms.Select(attrs={'class': 'form-select'}),
+            'weightage': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from university.models import WorkloadSettings
+        settings = WorkloadSettings.objects.first()
+        if settings:
+            self.fields['weightage'].widget.attrs.update({
+                'min': settings.min_weightage,
+                'max': settings.max_weightage
+            })
+            self.fields['weightage'].help_text = f"Allowed range: {settings.min_weightage} - {settings.max_weightage}"
+        else:
+             self.fields['weightage'].widget.attrs.update({'min': 0, 'max': 30})
+             self.fields['weightage'].help_text = "Allowed range: 0 - 30"
+        
+    def clean_weightage(self):
+        weightage = self.cleaned_data.get('weightage')
+        from university.models import WorkloadSettings
+        # Get singleton or defaults (0, 30) if not exists yet
+        settings = WorkloadSettings.objects.first() 
+        min_val = settings.min_weightage if settings else 0
+        max_val = settings.max_weightage if settings else 30
+        
+        if weightage is None:
+             weightage = 5 # Default fallback
+             
+        if weightage < min_val or weightage > max_val:
+            raise forms.ValidationError(f"Weightage must be between {min_val} and {max_val}.")
+            
+        return weightage
 
 class TaskForceMembershipForm(forms.ModelForm):
     class Meta:

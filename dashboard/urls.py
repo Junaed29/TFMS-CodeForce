@@ -6,7 +6,7 @@ from .views import (
     StaffDeactivateView, StaffActivateView, TaskForceListView, TaskForceCreateView,
     DepartmentListView, DepartmentCreateView, DepartmentUpdateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
-    LecturerTaskForceListView, DeanReportView, AuditLogListView
+    LecturerTaskForceListView, DeanReportView, AuditLogListView, WorkloadSettingsView
 )
 
 app_name = 'dashboard'
@@ -29,6 +29,7 @@ urlpatterns = [
     path('admin/department/', DepartmentListView.as_view(), name='department_list'),
     path('admin/department/add/', DepartmentCreateView.as_view(), name='department_add'),
     path('admin/department/<int:pk>/edit/', DepartmentUpdateView.as_view(), name='department_edit'),
+    path('admin/settings/workload/', WorkloadSettingsView.as_view(), name='workload_settings'),
 
     # HOD Views
     path('hod/', HODDashboardView.as_view(), name='hod'),

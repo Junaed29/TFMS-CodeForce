@@ -3,6 +3,15 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4 border-bottom pb-2">
+    <h1 class="h2">Admin Overview</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'dashboard:workload_settings' %}" class="btn btn-sm btn-light shadow-sm fw-bold text-dark">
+            <i class="bi bi-gear-fill me-1"></i> Workload Threshold
+        </a>
+    </div>
+</div>
+
 <div class="row mb-4">
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card h-100 hover-shadow border-0 shadow-sm">

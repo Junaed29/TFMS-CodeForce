@@ -11,8 +11,8 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
-from university.models import TaskForce, Department
-from .forms import StaffForm, TaskForceForm, DepartmentForm
+from university.models import TaskForce, Department, WorkloadSettings
+from .forms import StaffForm, TaskForceForm, DepartmentForm, WorkloadSettingsForm
 
 class DashboardDispatcher(LoginRequiredMixin, TemplateView):
     """Redirects authenticated users to their specific role dashboard."""
@@ -281,6 +281,23 @@ class TaskForceCreateView(RoleRequiredMixin, CreateView):
     template_name = "dashboard/admin/taskforce_form.html"
     success_url = reverse_lazy('dashboard:taskforce_list')
     required_role = User.Role.ADMIN
+
+class WorkloadSettingsView(RoleRequiredMixin, UpdateView):
+    model = WorkloadSettings
+    form_class = WorkloadSettingsForm
+    template_name = "dashboard/admin/workload_settings.html"
+    success_url = reverse_lazy('dashboard:admin')
+    required_role = User.Role.ADMIN
+
+    def get_object(self, queryset=None):
+        # Singleton pattern: ensure one exists
+        obj, created = WorkloadSettings.objects.get_or_create(pk=1)
+        return obj
+
+    def form_valid(self, form):
+        messages.success(self.request, "Workload thresholds updated successfully.")
+        log_action(self.request, self.request.user, "UPDATE_SETTINGS", "WorkloadSettings", self.object.pk, f"Updated thresholds: Min={form.instance.min_weightage}, Max={form.instance.max_weightage}")
+        return super().form_valid(form)
 
 class HODDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/hod_dashboard.html"
