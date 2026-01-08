@@ -53,24 +53,46 @@ class WorkloadService:
             return {
                 'status': 'UNKNOWN',
                 'color': 'secondary',
-                'message': 'Workload settings not configured'
+                'message': 'Workload settings not configured',
+                'current_weightage': current_weightage,
+                'predicted_weightage': predicted_total,
+                'min_weightage': None,
+                'max_weightage': None
             }
             
-        if predicted_total > settings.max_weightage:
+        min_weightage = settings.min_weightage
+        max_weightage = settings.max_weightage
+            
+        if predicted_total > max_weightage:
+            status = 'OVERLOADED'
             return {
-                'status': 'OVERLOADED',
+                'status': status,
                 'color': 'danger',
-                'message': f'Overloaded ({predicted_total}/{settings.max_weightage})'
+                'message': f'Overloaded ({predicted_total}/{max_weightage})',
+                'current_weightage': current_weightage,
+                'predicted_weightage': predicted_total,
+                'min_weightage': min_weightage,
+                'max_weightage': max_weightage
             }
-        elif predicted_total < settings.min_weightage:
+        elif predicted_total < min_weightage:
+            status = 'UNDERLOADED'
             return {
-                'status': 'UNDERLOADED',
+                'status': status,
                 'color': 'warning',
-                'message': f'Underloaded ({predicted_total}/{settings.max_weightage})'
+                'message': f'Underloaded ({predicted_total}/{max_weightage})',
+                'current_weightage': current_weightage,
+                'predicted_weightage': predicted_total,
+                'min_weightage': min_weightage,
+                'max_weightage': max_weightage
             }
         else:
+            status = 'BALANCED'
             return {
-                'status': 'BALANCED',
+                'status': status,
                 'color': 'success',
-                'message': f'Balanced ({predicted_total}/{settings.max_weightage})'
+                'message': f'Balanced ({predicted_total}/{max_weightage})',
+                'current_weightage': current_weightage,
+                'predicted_weightage': predicted_total,
+                'min_weightage': min_weightage,
+                'max_weightage': max_weightage
             }
