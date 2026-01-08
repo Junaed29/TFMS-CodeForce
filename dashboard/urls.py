@@ -4,7 +4,7 @@ from .views import (
     PSMDashboardView, DeanDashboardView, LecturerDashboardView,
     StaffListView, StaffCreateView, StaffUpdateView, StaffPasswordResetView, StaffUnlockView, 
     StaffDeactivateView, StaffActivateView, TaskForceListView, TaskForceCreateView,
-    DepartmentListView, DepartmentCreateView, DepartmentUpdateView, HODTaskForceListView,
+    TaskForceUpdateView, DepartmentListView, DepartmentCreateView, DepartmentUpdateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
     LecturerTaskForceListView, DeanReportView, AuditLogListView, WorkloadSettingsView
 )
@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/staff/<int:pk>/reset-password/', StaffPasswordResetView.as_view(), name='staff_reset_password'),
     path('admin/taskforce/', TaskForceListView.as_view(), name='taskforce_list'),
     path('admin/taskforce/add/', TaskForceCreateView.as_view(), name='taskforce_add'),
+    path('admin/taskforce/<int:pk>/edit/', TaskForceUpdateView.as_view(), name='taskforce_edit'),
     path('admin/department/', DepartmentListView.as_view(), name='department_list'),
     path('admin/department/add/', DepartmentCreateView.as_view(), name='department_add'),
     path('admin/department/<int:pk>/edit/', DepartmentUpdateView.as_view(), name='department_edit'),

@@ -31,17 +31,9 @@
             </div>
             <div class="card-body">
                 <p class="card-text text-muted">{{ tf.description|truncatewords:20 }}</p>
-                <div class="d-flex align-items-center mb-2">
-                    <span class="fw-bold me-2">Chairman:</span>
-                    <span>{{ tf.chairman.get_full_name|default:"Unassigned" }}</span>
-                </div>
-                <div class="d-flex align-items-center">
-                    <span class="fw-bold me-2">Members:</span>
-                    <span class="badge bg-light text-dark border">{{ tf.members.count }} Members</span>
-                </div>
             </div>
             <div class="card-footer bg-white border-top-0 pb-3 text-end">
-                <button class="btn btn-sm btn-outline-primary">Manage</button>
+                <a href="{% url 'dashboard:taskforce_edit' tf.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
             </div>
         </div>
     </div>

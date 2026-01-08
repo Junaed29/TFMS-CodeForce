@@ -282,6 +282,18 @@ class TaskForceCreateView(RoleRequiredMixin, CreateView):
     success_url = reverse_lazy('dashboard:taskforce_list')
     required_role = User.Role.ADMIN
 
+class TaskForceUpdateView(RoleRequiredMixin, UpdateView):
+    model = TaskForce
+    form_class = TaskForceForm
+    template_name = "dashboard/admin/taskforce_form.html"
+    success_url = reverse_lazy('dashboard:taskforce_list')
+    required_role = User.Role.ADMIN
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Edit Task Force"
+        return context
+
 class WorkloadSettingsView(RoleRequiredMixin, UpdateView):
     model = WorkloadSettings
     form_class = WorkloadSettingsForm
