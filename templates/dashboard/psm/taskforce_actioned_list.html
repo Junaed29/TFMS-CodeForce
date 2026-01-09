@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Actioned Task Forces{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">My Actioned Task Forces</h1>
+    </div>
+
+    <div class="row">
+        {% for tf in taskforces %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 text-truncate" title="{{ tf.name }}">{{ tf.name }}</h5>
+                    {% if tf.status == 'ACTIVE' %}
+                    <span class="badge bg-success">Active</span>
+                    {% elif tf.status == 'DRAFT' %}
+                    <span class="badge bg-secondary">Draft</span>
+                    {% elif tf.status == 'SUBMITTED' %}
+                    <span class="badge bg-warning text-dark">Submitted</span>
+                    {% elif tf.status == 'APPROVED' %}
+                    <span class="badge bg-primary">Approved</span>
+                    {% elif tf.status == 'REJECTED' %}
+                    <span class="badge bg-danger">Rejected</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted">{{ tf.description|default:"No description provided."|truncatewords:20 }}</p>
+
+                    <div class="mb-2">
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Departments</small>
+                        <div class="text-dark small">
+                            {% for dept in tf.departments.all %}
+                            {{ dept.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="text-muted small">Members: {{ tf.members.count }}</span>
+                        <a href="{% url 'dashboard:psm_taskforce_actioned_detail' tf.pk %}"
+                            class="btn btn-sm btn-outline-dark">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No actioned task forces yet.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

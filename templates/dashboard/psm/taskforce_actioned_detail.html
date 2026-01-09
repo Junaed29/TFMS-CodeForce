@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Task Force Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" id="manage-app">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-gray-800 mb-1">Task Force Details</h1>
+            <p class="text-muted mb-0">
+                Task Force: <span class="fw-semibold text-dark">{{ taskforce.name }}</span>
+            </p>
+        </div>
+        <div>
+            <span class="badge rounded-pill bg-white text-dark border px-3 py-2 shadow-sm">
+                {{ taskforce.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT PANEL: Actions -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4 bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-2">Update Locked Task Force</h6>
+                    <p class="small text-muted mb-0">
+                        Updates are only allowed for approved task forces and require justification.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h6 class="fw-bold mb-0">Add Member</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-uppercase small fw-bold text-muted tracking-wide">Select
+                            Lecturer</label>
+                        <div class="input-group">
+                            <select class="form-select form-select-sm bg-light border-0 small" id="memberSelect">
+                                <option value="">Loading staff...</option>
+                                <!-- Populated via API -->
+                            </select>
+                            <button type="button" class="btn btn-primary px-4" id="addMemberBtn">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="selection-preview" class="min-h-50">
+                        <!-- Content injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Current Members -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Current Members</h5>
+                    <span class="badge bg-light text-secondary border" id="count-badge">0 Assigned</span>
+                </div>
+
+                <form method="post" id="mainForm" class="d-flex flex-column h-100">
+                    {% csrf_token %}
+                    <div id="hidden-inputs">
+                        <select name="members" id="id_members" multiple class="d-none">
+                            {% for id in form.members.value %}
+                            <option value="{{ id }}" selected>{{ id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-secondary text-uppercase text-xs tracking-wide">
+                                <tr>
+                                    <th class="ps-4 py-3 border-0 small" style="width: 40%">Member</th>
+                                    <th class="py-3 border-0" style="width: 35%">Workload Status</th>
+                                    <th class="text-end pe-4 py-3 border-0">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roster-body" class="border-top-0">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+
+                        <div id="empty-state" class="text-center py-5 d-none">
+                            <div class="mb-3 text-muted opacity-50">
+                                <i class="bi bi-people fs-1"></i>
+                            </div>
+                            <h6 class="text-muted">No members assigned yet</h6>
+                            <p class="small text-muted">Use the panel on the left to add staff.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body border-top">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Justification (Required)</label>
+                            <textarea class="form-control" name="psm_adjustment_reason" id="psm_adjustment_reason"
+                                rows="3" required placeholder="Explain why you updated the task force..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white mt-auto py-3 border-top">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'dashboard:psm_taskforce_actioned_list' %}"
+                                class="btn btn-light text-muted">Back</a>
+                            <button type="button" onclick="submitForm()" class="btn btn-primary px-4 fw-bold">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const API_URL = "{% url 'dashboard:staff_list_api' %}?department_ids={{ department_ids }}";
+    const TF_WEIGHT = {{ taskforce.weightage }};
+    const TF_STATUS = "{{ taskforce.status }}";
+
+    const PRELOADED_MEMBERS = {{ current_members_json| safe }};
+    const preloadedMemberIds = new Set(PRELOADED_MEMBERS.map(m => String(m.id)));
+
+    let staffRegistry = {};
+    let selectedMembers = new Set();
+    let candidateList = [];
+
+    const rosterBody = document.getElementById('roster-body');
+    const memberSelect = document.getElementById('memberSelect');
+    const countBadge = document.getElementById('count-badge');
+    const previewDiv = document.getElementById('selection-preview');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        PRELOADED_MEMBERS.forEach(m => {
+            addToRegistry(m);
+            selectedMembers.add(String(m.id));
+        });
+        renderRoster();
+        await loadStaff();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('addMemberBtn').addEventListener('click', () => {
+            const id = memberSelect.value;
+            if (id) addMember(id);
+        });
+
+        memberSelect.addEventListener('change', (e) => {
+            const id = e.target.value;
+            updatePreview(id);
+        });
+    });
+
+    function addToRegistry(member) {
+        staffRegistry[member.id] = member;
+    }
+
+    async function loadStaff() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            data.staff.forEach(s => addToRegistry(s));
+            candidateList = data.staff;
+            populateDropdowns(candidateList);
+        } catch (e) {
+            console.error("Failed to load staff", e);
+            alert("Error loading staff list. Please refresh.");
+        }
+    }
+
+    function populateDropdowns(candidates) {
+        memberSelect.innerHTML = '<option value="">-- Select Lecturer --</option>';
+        candidates.forEach(s => {
+            if (selectedMembers.has(String(s.id))) {
+                return;
+            }
+            const optM = document.createElement('option');
+            optM.value = s.id;
+            optM.textContent = s.name;
+            memberSelect.appendChild(optM);
+        });
+    }
+
+    function shouldApplyWeightForMember(id) {
+        if (!['ACTIVE', 'DRAFT', 'SUBMITTED', 'APPROVED'].includes(TF_STATUS)) {
+            return true;
+        }
+        return !preloadedMemberIds.has(String(id));
+    }
+
+    function getWorkloadImpact(workload, applyWeight) {
+        if (!workload) {
+            return { status: 'UNKNOWN', message: 'Workload unavailable' };
+        }
+
+        const current = workload.current_weightage;
+        const min = workload.min_weightage;
+        const max = workload.max_weightage;
+
+        if (current == null || min == null || max == null) {
+            return { status: workload.status, message: workload.message || 'Workload unavailable' };
+        }
+
+        const predicted = current + (applyWeight ? TF_WEIGHT : 0);
+        let status = 'BALANCED';
+        if (predicted > max) {
+            status = 'OVERLOADED';
+        } else if (predicted < min) {
+            status = 'UNDERLOADED';
+        }
+
+        const label = status === 'OVERLOADED'
+            ? 'Overloaded'
+            : status === 'UNDERLOADED'
+                ? 'Underloaded'
+                : 'Balanced';
+
+        return {
+            status: status,
+            message: `${label} (${predicted}/${max})`
+        };
+    }
+
+    function updatePreview(id) {
+        const previewEl = document.getElementById('selection-preview');
+        if (!id) {
+            previewEl.innerHTML = `
+                <div class="text-center py-4 bg-light rounded mt-3 border border-dashed">
+                    <div class="text-muted small">Select a lecturer to view their workload status</div>
+                </div>
+            `;
+            return;
+        }
+        const s = staffRegistry[id];
+        if (!s) return;
+
+        const applyWeight = shouldApplyWeightForMember(id) && !selectedMembers.has(String(id));
+        const currentImpact = getWorkloadImpact(s.workload, false);
+        const predictedImpact = getWorkloadImpact(s.workload, applyWeight);
+
+        let badge = getBadge(predictedImpact.status);
+        let icon = predictedImpact.status === 'OVERLOADED' ? 'exclamation-triangle-fill' : 'check-circle-fill';
+
+        previewEl.innerHTML = `
+            <div class="card border mt-3 bg-light animate__animated animate__fadeIn">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge ${badge} me-2"><i class="bi bi-${icon}"></i> ${predictedImpact.status}</span>
+                    </div>
+                    <div class="small">
+                        <strong>Current:</strong> ${currentImpact.message}
+                    </div>
+                    ${applyWeight ? `
+                    <div class="small mt-1">
+                        <strong>After add:</strong> ${predictedImpact.message}
+                    </div>
+                    <div class="small text-muted mt-1">
+                        + ${TF_WEIGHT} (Task Force)
+                    </div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function addMember(id) {
+        if (selectedMembers.has(id)) {
+            alert("Member already added.");
+            return;
+        }
+        selectedMembers.add(id);
+        memberSelect.value = "";
+        previewDiv.innerHTML = "";
+        populateDropdowns(candidateList);
+        renderRoster();
+    }
+
+    function removeMember(id) {
+        selectedMembers.delete(id);
+        populateDropdowns(candidateList);
+        renderRoster();
+    }
+
+    function renderRoster() {
+        rosterBody.innerHTML = '';
+        let count = 0;
+        let hasOverload = false;
+
+        selectedMembers.forEach(id => {
+            const s = staffRegistry[id];
+            if (s) {
+                const row = createRow(s, 'Member');
+                rosterBody.appendChild(row.el);
+                if (row.isOverloaded) hasOverload = true;
+                count++;
+            }
+        });
+
+        countBadge.textContent = `${count} Members`;
+        const emptyState = document.getElementById('empty-state');
+        if (emptyState) {
+            emptyState.classList.toggle('d-none', count !== 0);
+        }
+        return hasOverload;
+    }
+
+    function createRow(staff, roleLabel) {
+        const tr = document.createElement('tr');
+
+        const applyWeight = shouldApplyWeightForMember(staff.id);
+        const impact = getWorkloadImpact(staff.workload, applyWeight);
+        const status = impact.status;
+        const msg = impact.message;
+        const isOver = status === 'OVERLOADED';
+        const badgeClass = getBadge(status);
+
+        tr.innerHTML = `
+            <td class="ps-4">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-circle me-3 bg-light text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px;">
+                        ${getInitials(staff.name)}
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark small">${staff.name}</div>
+                        <div class="small text-muted">${staff.email}</div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="badge ${badgeClass} rounded-pill px-3 py-2 fw-normal">
+                    ${isOver ? '<i class="bi bi-exclamation-triangle-fill me-1"></i>' : '<i class="bi bi-activity me-1"></i>'}
+                    ${msg}
+                </span>
+            </td>
+            <td class="text-end pe-4">
+                <button type="button" class="btn btn-light btn-sm text-danger hover-bg-danger-subtle" onclick="removeMember('${staff.id}')" title="Remove Member">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        return { el: tr, isOverloaded: isOver };
+    }
+
+    function getInitials(name) {
+        return name.match(/(\b\S)?/g).join("").match(/(^\S|\S$)?/g).join("").toUpperCase();
+    }
+
+    function getBadge(status) {
+        if (status === 'OVERLOADED') return 'bg-danger';
+        if (status === 'UNDERLOADED') return 'bg-warning text-dark';
+        return 'bg-success';
+    }
+
+    function syncHiddenInputs() {
+        const select = document.getElementById('id_members');
+        select.innerHTML = '';
+        selectedMembers.forEach(id => {
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
+    window.submitForm = function () {
+        syncHiddenInputs();
+        document.getElementById('mainForm').submit();
+    }
+</script>
+{% endblock %}

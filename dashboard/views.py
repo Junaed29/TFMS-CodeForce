@@ -536,6 +536,7 @@ class PSMDashboardView(RoleRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         # Count Pending Approvals
         context['pending_count'] = TaskForce.objects.filter(status='SUBMITTED').count()
+        context['actioned_count'] = TaskForce.objects.filter(assigned_psm=self.request.user).count()
         return context
 
 class PSMTaskForceListView(RoleRequiredMixin, ListView):
@@ -720,6 +721,91 @@ class PSMTaskForceModifyView(RoleRequiredMixin, UpdateView):
                 print(f"Error sending email: {e}")
 
         messages.success(self.request, f"Task Force '{self.object.name}' modified and approved.")
+        return redirect(self.success_url)
+
+class PSMActionedTaskForceListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/psm/taskforce_actioned_list.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.PSM
+
+    def get_queryset(self):
+        return TaskForce.objects.filter(assigned_psm=self.request.user).order_by('-updated_at')
+
+class PSMActionedTaskForceUpdateView(RoleRequiredMixin, UpdateView):
+    model = TaskForce
+    form_class = PSMTaskForceMembershipForm
+    template_name = "dashboard/psm/taskforce_actioned_detail.html"
+    context_object_name = "taskforce"
+    required_role = User.Role.PSM
+    success_url = reverse_lazy('dashboard:psm_taskforce_actioned_list')
+
+    def get_queryset(self):
+        return TaskForce.objects.filter(assigned_psm=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['departments'] = self.object.departments.all()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from university.services import WorkloadService
+        import json
+
+        members_data = []
+        for member in self.object.members.all():
+            status = WorkloadService.get_workload_status(member)
+            members_data.append({
+                'id': member.id,
+                'name': member.get_full_name() or member.username,
+                'email': member.email,
+                'role': member.get_role_display(),
+                'workload': status
+            })
+        context['current_members_json'] = json.dumps(members_data)
+        context['department_ids'] = ",".join(str(d.id) for d in self.object.departments.all())
+        return context
+
+    def form_valid(self, form):
+        if self.object.status != 'APPROVED':
+            messages.error(self.request, "Only approved task forces can be updated here.")
+            return redirect('dashboard:psm_taskforce_actioned_list')
+
+        justification = self.request.POST.get('psm_adjustment_reason', '').strip()
+        if not justification:
+            messages.error(self.request, "Justification is required to update a locked task force.")
+            return redirect('dashboard:psm_taskforce_actioned_detail', pk=self.object.pk)
+
+        self.object = form.save(commit=False)
+        self.object.psm_adjustment_reason = justification
+        self.object.psm_adjusted_at = timezone.now()
+        self.object.save()
+        form.save_m2m()
+
+        log_action(self.request, self.request.user, "UPDATE_LOCKED_TASKFORCE", "TaskForce", self.object.pk, f"Updated locked task force: {self.object.name}")
+
+        recipients = []
+        if self.object.submitted_by and self.object.submitted_by.email:
+            recipients.append(self.object.submitted_by.email)
+        member_emails = list(self.object.members.exclude(email__isnull=True).exclude(email__exact='').values_list('email', flat=True))
+        recipients.extend(member_emails)
+        if recipients:
+            subject = f"Task Force Updated: {self.object.name}"
+            context = {
+                'headline': "Task Force Updated",
+                'body_text': f"Task Force '{self.object.name}' has been updated by the PSM.\n\nReason:\n{justification}",
+                'action_url': self.request.build_absolute_uri(reverse_lazy('dashboard:lecturer_portfolio')),
+                'action_text': "View Task Force"
+            }
+            html_message = render_to_string('email/notification.html', context)
+            plain_message = strip_tags(html_message)
+            try:
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+        messages.success(self.request, "Locked task force updated successfully.")
         return redirect(self.success_url)
 
 class DeanDashboardView(RoleRequiredMixin, TemplateView):

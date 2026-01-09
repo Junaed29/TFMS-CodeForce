@@ -6,7 +6,8 @@ from .views import (
     StaffDeactivateView, StaffActivateView, TaskForceListView, TaskForceCreateView,
     TaskForceUpdateView, DepartmentListView, DepartmentCreateView, DepartmentUpdateView, HODTaskForceListView,
     HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
-    PSMTaskForceModifyView, LecturerTaskForceListView, DeanReportView, AuditLogListView, WorkloadSettingsView
+    PSMTaskForceModifyView, PSMActionedTaskForceListView, PSMActionedTaskForceUpdateView,
+    LecturerTaskForceListView, DeanReportView, AuditLogListView, WorkloadSettingsView
 )
 from .api import staff_list_api
 
@@ -46,6 +47,8 @@ urlpatterns = [
     path('psm/approvals/', PSMTaskForceListView.as_view(), name='psm_taskforce_list'),
     path('psm/approvals/<int:pk>/', PSMTaskForceDetailView.as_view(), name='psm_taskforce_review'),
     path('psm/approvals/<int:pk>/modify/', PSMTaskForceModifyView.as_view(), name='psm_taskforce_modify'),
+    path('psm/actioned/', PSMActionedTaskForceListView.as_view(), name='psm_taskforce_actioned_list'),
+    path('psm/actioned/<int:pk>/', PSMActionedTaskForceUpdateView.as_view(), name='psm_taskforce_actioned_detail'),
     
     
     # Dean Views
