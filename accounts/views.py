@@ -61,6 +61,9 @@ class CustomLoginView(LoginView):
         if username:
             try:
                 user = User.objects.get(username=username)
+                if not user.is_active:
+                    messages.error(self.request, "Your account has been deactivated. Please contact the Administrator.")
+                    return super().form_invalid(form)
                 
                 # Admin Exception: Admins never get locked
                 if user.is_superuser or user.role == User.Role.ADMIN:
