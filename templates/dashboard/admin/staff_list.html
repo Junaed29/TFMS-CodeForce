@@ -18,6 +18,7 @@
                         <th>Username</th>
                         <th>Name</th>
                         <th>Role</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -33,6 +34,17 @@
                             {% elif staff.role == 'PSM' %}<span class="badge bg-info text-dark">PSM</span>
                             {% elif staff.role == 'DEAN' %}<span class="badge bg-dark">Management</span>
                             {% else %}<span class="badge bg-primary">Lecturer</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if not staff.is_active %}
+                            <span class="badge bg-danger">Inactive</span>
+                            {% elif staff.is_locked %}
+                            <span class="badge bg-warning text-dark">Locked</span>
+                            {% elif staff.must_change_password %}
+                            <span class="badge bg-info text-dark">First Time</span>
+                            {% else %}
+                            <span class="badge bg-success">Active</span>
+                            {% endif %}
                         </td>
                         <td>
                             <div class="d-flex gap-2">
