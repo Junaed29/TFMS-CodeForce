@@ -164,3 +164,30 @@ class TaskForceMembershipForm(forms.ModelForm):
         if inactive.exists():
             raise forms.ValidationError("All selected members must be active staff.")
         return members
+
+class PSMTaskForceMembershipForm(forms.ModelForm):
+    class Meta:
+        model = TaskForce
+        fields = ['members']
+        widgets = {
+            'members': forms.CheckboxSelectMultiple(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        departments = kwargs.pop('departments', None)
+        super().__init__(*args, **kwargs)
+        staff_qs = User.objects.filter(is_active=True)
+        if departments is not None:
+            staff_qs = staff_qs.filter(department__in=departments)
+        if self.instance.pk:
+            staff_qs = staff_qs | self.instance.members.filter(is_active=True)
+        self.fields['members'].queryset = staff_qs.distinct()
+
+    def clean_members(self):
+        members = self.cleaned_data.get('members')
+        if not members or members.count() < 1:
+            raise forms.ValidationError("At least one member is required.")
+        inactive = members.filter(is_active=False)
+        if inactive.exists():
+            raise forms.ValidationError("All selected members must be active staff.")
+        return members

@@ -78,18 +78,22 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Rejection Reason / Feedback</label>
-                            <textarea name="rejection_reason" class="form-control" rows="3"
-                                placeholder="Required only if rejecting..."></textarea>
-                            <div class="form-text">Provide feedback to the HOD if you are rejecting this submission.
-                            </div>
+                        <textarea name="rejection_reason" class="form-control" rows="3"
+                            placeholder="Required only if rejecting..."></textarea>
+                        <div class="form-text">Provide feedback to the HOD if you are rejecting this submission.
                         </div>
+                    </div>
 
                         <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'dashboard:psm_taskforce_modify' taskforce.pk %}"
+                                class="btn btn-outline-primary">
+                                <i class="bi bi-pencil-square me-1"></i> Modify then Approve
+                            </a>
                             <button type="submit" name="action" value="reject" class="btn btn-outline-danger">
                                 <i class="bi bi-x-circle me-1"></i> Reject Submission
                             </button>
-                            <button type="submit" name="action" value="approve" class="btn btn-success px-4"
-                                onclick="return confirm('Are you sure you want to APPROVE this Task Force? It will be locked.');">
+                            <button type="button" class="btn btn-success px-4" data-bs-toggle="modal"
+                                data-bs-target="#approveConfirmModal">
                                 <i class="bi bi-check-circle me-1"></i> Approve
                             </button>
                         </div>
@@ -100,4 +104,30 @@
         </div>
     </div>
 </div>
+
+<!-- Approve Confirmation Modal -->
+<div class="modal fade" id="approveConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Confirm Approval</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Approving this task force will lock it for further modification.</p>
+                <p class="text-muted small mb-0">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" name="action" value="approve" form="approveForm"
+                    class="btn btn-success">Approve Task Force</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="approveForm" method="post" action="{% url 'dashboard:psm_taskforce_review' taskforce.pk %}" class="d-none">
+    {% csrf_token %}
+</form>
 {% endblock %}

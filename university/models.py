@@ -28,6 +28,22 @@ class TaskForce(models.Model):
     weightage = models.IntegerField(default=5)
     
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='task_force_memberships', blank=True)
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='submitted_taskforces'
+    )
+    assigned_psm = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_taskforces'
+    )
+    psm_adjustment_reason = models.TextField(blank=True, null=True)
+    psm_adjusted_at = models.DateTimeField(blank=True, null=True)
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
     created_at = models.DateTimeField(auto_now_add=True)

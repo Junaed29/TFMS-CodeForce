@@ -14,11 +14,20 @@ def staff_list_api(request):
     - role: Filter by role (e.g. LECTURER)
     """
     department_id = request.GET.get('department_id')
+    department_ids = request.GET.get('department_ids')
     role = request.GET.get('role')
     
     users = User.objects.filter(is_active=True)
     
-    if department_id:
+    if department_ids:
+        ids = []
+        for raw_id in department_ids.split(','):
+            raw_id = raw_id.strip()
+            if raw_id.isdigit():
+                ids.append(int(raw_id))
+        if ids:
+            users = users.filter(department_id__in=ids)
+    elif department_id:
         users = users.filter(department_id=department_id)
         
     if role:

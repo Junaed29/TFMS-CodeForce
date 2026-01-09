@@ -5,12 +5,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import PasswordResetForm
 from django.urls import reverse_lazy
 from django.utils.crypto import get_random_string
+from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
+from django.db.models import Q
 from university.models import TaskForce, Department, WorkloadSettings
 from .forms import StaffForm, TaskForceForm, DepartmentForm, WorkloadSettingsForm
 
@@ -346,7 +348,7 @@ class HODDashboardView(RoleRequiredMixin, TemplateView):
 from django.views.generic import ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from .forms import (
-    StaffForm, TaskForceForm, DepartmentForm, TaskForceMembershipForm
+    StaffForm, TaskForceForm, DepartmentForm, TaskForceMembershipForm, PSMTaskForceMembershipForm
 )
 
 # ... (Previous imports)
@@ -423,6 +425,7 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
         
         if action == 'submit':
             form.instance.status = 'SUBMITTED'
+            form.instance.submitted_by = self.request.user
             # Check for justification if provided
             justification = self.request.POST.get('justification')
             if justification:
@@ -452,6 +455,22 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
                 send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.request.user.email], html_message=html_message)
             except Exception as e:
                 print(f"Error sending email: {e}")
+
+            # Notify assigned PSM on resubmission
+            if self.object.assigned_psm and self.object.assigned_psm.email:
+                psm_subject = f"Task Force Resubmitted: {self.object.name}"
+                psm_context = {
+                    'headline': "Task Force Resubmitted",
+                    'body_text': f"The Task Force '{self.object.name}' has been resubmitted for your review.",
+                    'action_url': self.request.build_absolute_uri(reverse_lazy('dashboard:psm_taskforce_review', kwargs={'pk': self.object.pk})),
+                    'action_text': "Review Submission"
+                }
+                psm_html = render_to_string('email/notification.html', psm_context)
+                psm_plain = strip_tags(psm_html)
+                try:
+                    send_mail(psm_subject, psm_plain, settings.DEFAULT_FROM_EMAIL, [self.object.assigned_psm.email], html_message=psm_html)
+                except Exception as e:
+                    print(f"Error sending email to PSM: {e}")
                 
             messages.success(self.request, f"Task Force '{self.object.name}' submitted successfully. Confirmation email sent.")
             return response
@@ -527,7 +546,11 @@ class PSMTaskForceListView(RoleRequiredMixin, ListView):
 
     def get_queryset(self):
         # PSM sees SUBMITTED task forces for approval
-        return TaskForce.objects.filter(status='SUBMITTED').order_by('-updated_at')
+        return TaskForce.objects.filter(
+            status='SUBMITTED'
+        ).filter(
+            Q(assigned_psm__isnull=True) | Q(assigned_psm=self.request.user)
+        ).order_by('-updated_at')
 
 from django.views.generic import DetailView
 
@@ -536,20 +559,51 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
     template_name = "dashboard/psm/taskforce_review.html"
     context_object_name = "taskforce"
     required_role = User.Role.PSM
+
+    def get_queryset(self):
+        return TaskForce.objects.filter(
+            status='SUBMITTED'
+        ).filter(
+            Q(assigned_psm__isnull=True) | Q(assigned_psm=self.request.user)
+        )
     
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         action = request.POST.get('action')
-        
+
+        if self.object.assigned_psm and self.object.assigned_psm != request.user:
+            messages.error(request, "You are not assigned to review this task force.")
+            return redirect('dashboard:psm_taskforce_list')
+
         if action == 'approve':
             self.object.status = 'APPROVED'
+            if not self.object.assigned_psm:
+                self.object.assigned_psm = request.user
             self.object.save()
             log_action(request, request.user, "APPROVE_TASKFORCE", "TaskForce", self.object.pk, f"Approved task force: {self.object.name}")
             
             # Send Email logic (removed chairman specific email)
             # Consider emailing HODs of involved departments instead?
             # For now, no individual email if no specific leader.
-            pass
+            recipients = []
+            if self.object.submitted_by and self.object.submitted_by.email:
+                recipients.append(self.object.submitted_by.email)
+            member_emails = list(self.object.members.exclude(email__isnull=True).exclude(email__exact='').values_list('email', flat=True))
+            recipients.extend(member_emails)
+            if recipients:
+                subject = f"Task Force Approved: {self.object.name}"
+                context = {
+                    'headline': "Task Force Approved",
+                    'body_text': f"Task Force '{self.object.name}' has been approved by the PSM.",
+                    'action_url': request.build_absolute_uri(reverse_lazy('dashboard:lecturer_portfolio')),
+                    'action_text': "View Task Force"
+                }
+                html_message = render_to_string('email/notification.html', context)
+                plain_message = strip_tags(html_message)
+                try:
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
 
             messages.success(request, f"Task Force '{self.object.name}' approved.")
             return redirect('dashboard:psm_taskforce_list')
@@ -559,19 +613,114 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
             if reason:
                 self.object.rejection_reason = reason
                 self.object.status = 'REJECTED'
+                if not self.object.assigned_psm:
+                    self.object.assigned_psm = request.user
                 self.object.save()
                 log_action(request, request.user, "REJECT_TASKFORCE", "TaskForce", self.object.pk, f"Rejected with reason: {reason}")
                 
                 # Send Email logic (removed chairman specific email)
                 # Consider emailing HODs of involved departments instead?
-                pass
+                if self.object.submitted_by and self.object.submitted_by.email:
+                    subject = f"Task Force Rejected: {self.object.name}"
+                    context = {
+                        'headline': "Task Force Rejected",
+                        'body_text': f"Task Force '{self.object.name}' has been rejected.\n\nReason:\n{reason}",
+                        'action_url': request.build_absolute_uri(reverse_lazy('dashboard:hod_taskforce_list')),
+                        'action_text': "Review Task Force"
+                    }
+                    html_message = render_to_string('email/notification.html', context)
+                    plain_message = strip_tags(html_message)
+                    try:
+                        send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.submitted_by.email], html_message=html_message)
+                    except Exception as e:
+                        print(f"Error sending email: {e}")
 
                 messages.success(request, f"Task Force '{self.object.name}' rejected.")
                 return redirect('dashboard:psm_taskforce_list')
             else:
-                 pass
+                messages.error(request, "Rejection reason is required.")
+                return redirect('dashboard:psm_taskforce_review', pk=self.object.pk)
                  
         return redirect('dashboard:psm_taskforce_list')
+
+class PSMTaskForceModifyView(RoleRequiredMixin, UpdateView):
+    model = TaskForce
+    form_class = PSMTaskForceMembershipForm
+    template_name = "dashboard/psm/taskforce_modify.html"
+    context_object_name = "taskforce"
+    required_role = User.Role.PSM
+    success_url = reverse_lazy('dashboard:psm_taskforce_list')
+
+    def get_queryset(self):
+        return TaskForce.objects.filter(
+            status='SUBMITTED'
+        ).filter(
+            Q(assigned_psm__isnull=True) | Q(assigned_psm=self.request.user)
+        )
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['departments'] = self.object.departments.all()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from university.services import WorkloadService
+        import json
+
+        members_data = []
+        for member in self.object.members.all():
+            status = WorkloadService.get_workload_status(member)
+            members_data.append({
+                'id': member.id,
+                'name': member.get_full_name() or member.username,
+                'email': member.email,
+                'role': member.get_role_display(),
+                'workload': status
+            })
+        context['current_members_json'] = json.dumps(members_data)
+        context['department_ids'] = ",".join(str(d.id) for d in self.object.departments.all())
+        return context
+
+    def form_valid(self, form):
+        justification = self.request.POST.get('psm_adjustment_reason', '').strip()
+        if not justification:
+            messages.error(self.request, "Justification is required to modify and approve.")
+            return redirect('dashboard:psm_taskforce_modify', pk=self.object.pk)
+
+        self.object = form.save(commit=False)
+        self.object.status = 'APPROVED'
+        self.object.psm_adjustment_reason = justification
+        self.object.psm_adjusted_at = timezone.now()
+        if not self.object.assigned_psm:
+            self.object.assigned_psm = self.request.user
+        self.object.save()
+        form.save_m2m()
+
+        log_action(self.request, self.request.user, "MODIFY_APPROVE_TASKFORCE", "TaskForce", self.object.pk, f"Modified and approved task force: {self.object.name}")
+
+        recipients = []
+        if self.object.submitted_by and self.object.submitted_by.email:
+            recipients.append(self.object.submitted_by.email)
+        member_emails = list(self.object.members.exclude(email__isnull=True).exclude(email__exact='').values_list('email', flat=True))
+        recipients.extend(member_emails)
+        if recipients:
+            subject = f"Task Force Modified and Approved: {self.object.name}"
+            context = {
+                'headline': "Task Force Modified and Approved",
+                'body_text': f"Task Force '{self.object.name}' has been modified and approved by the PSM.\n\nReason:\n{justification}",
+                'action_url': self.request.build_absolute_uri(reverse_lazy('dashboard:lecturer_portfolio')),
+                'action_text': "View Task Force"
+            }
+            html_message = render_to_string('email/notification.html', context)
+            plain_message = strip_tags(html_message)
+            try:
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+        messages.success(self.request, f"Task Force '{self.object.name}' modified and approved.")
+        return redirect(self.success_url)
 
 class DeanDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/dean_dashboard.html"

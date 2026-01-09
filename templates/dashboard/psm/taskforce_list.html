@@ -18,8 +18,7 @@
                     <span class="badge bg-warning text-dark">Submitted</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-text text-muted">{{ tf.description|truncatewords:20|default:"No description
-                        provided." }}</p>
+                    <p class="card-text text-muted">{{ tf.description|default:"No description provided."|truncatewords:20 }}</p>
 
                     <div class="mb-2">
                         <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Departments</small>
