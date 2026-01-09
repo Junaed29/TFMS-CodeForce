@@ -21,6 +21,14 @@
             </a>
         </div>
 
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} py-2 small" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
         {% block auth_content %}
         <!-- Child templates will inject form content here -->
         {% endblock %}
