@@ -5,18 +5,22 @@
   --utm-moccasin: #FFE6BF;
 }
 
+html {
+  background-color: #fffaf5;
+}
+
 body {
   font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #fca311;
+  background-color: #fffaf5;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   /* Premium Mesh Gradient Background */
-  background: radial-gradient(circle at top left, #ffb347, #ffcc33), radial-gradient(circle at bottom right, #ffb347, #ffcc33);
+  background: radial-gradient(circle at top left, #fffaf5, #fffdf9), radial-gradient(circle at bottom right, #fffaf5, #fffdf9);
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(255, 165, 0, 0.2) 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, rgba(255, 140, 0, 0.2) 0%, transparent 20%),
-    linear-gradient(135deg, #FF9F1C 0%, #FF6B35 100%);
+    radial-gradient(circle at 10% 20%, rgba(255, 233, 210, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(255, 226, 200, 0.1) 0%, transparent 20%),
+    linear-gradient(135deg, #fffaf5 0%, #ffefdf 100%);
   background-attachment: fixed;
 }
 
