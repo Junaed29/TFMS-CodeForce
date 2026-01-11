@@ -13,7 +13,10 @@
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0 text-truncate" title="{{ tf.name }}">{{ tf.name }}</h5>
+                    <div>
+                        <h5 class="card-title mb-0 text-truncate" title="{{ tf.name }}">{{ tf.name }}</h5>
+                        <small class="text-muted">{{ tf.chart_id|default:"" }}</small>
+                    </div>
                     {% if tf.status == 'ACTIVE' %}
                     <span class="badge bg-success">Active</span>
                     {% elif tf.status == 'DRAFT' %}

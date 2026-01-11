@@ -6,9 +6,12 @@
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
-            <div class="card-header card-header-custom">
-                <h4 class="mb-0">{{ title|default:"Create New Task Force" }}</h4>
-            </div>
+                <div class="card-header card-header-custom">
+                    <h4 class="mb-0">{{ title|default:"Create New Task Force" }}</h4>
+                    {% if form.instance.chart_id %}
+                    <small class="text-white-50">ID: {{ form.instance.chart_id }}</small>
+                    {% endif %}
+                </div>
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}

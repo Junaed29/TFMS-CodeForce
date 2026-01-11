@@ -15,7 +15,10 @@
             <div class="card h-100 shadow-sm border-start border-4 border-secondary">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title text-truncate fw-bold mb-0" title="{{ tf.name }}">{{ tf.name }}</h5>
+                        <div>
+                            <h5 class="card-title text-truncate fw-bold mb-0" title="{{ tf.name }}">{{ tf.name }}</h5>
+                            <small class="text-muted">{{ tf.chart_id|default:"" }}</small>
+                        </div>
                         <span
                             class="badge {% if tf.status == 'APPROVED' %}bg-success{% elif tf.status == 'ACTIVE' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
                             {{ tf.get_status_display }}

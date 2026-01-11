@@ -45,6 +45,7 @@
             <thead class="table-light">
                 <tr>
                     <th>Task Force Name</th>
+                    <th>ID</th>
                     <th>Status</th>
                     <th>Departments</th>
                     <!-- Chairman Removed -->
@@ -56,6 +57,7 @@
                 {% for tf in taskforces %}
                 <tr>
                     <td class="fw-bold">{{ tf.name }}</td>
+                    <td class="text-muted">{{ tf.chart_id|default:"" }}</td>
                     <td>
                         <span
                             class="badge {% if tf.status == 'APPROVED' %}bg-success{% elif tf.status == 'REJECTED' %}bg-danger{% elif tf.status == 'SUBMITTED' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
