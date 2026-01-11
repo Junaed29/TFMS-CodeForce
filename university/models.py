@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from datetime import date
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -48,6 +49,21 @@ class TaskForce(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.chart_id:
+            year = date.today().year
+            prefix = f"TF-{year}-"
+            last = TaskForce.objects.filter(chart_id__startswith=prefix).order_by('chart_id').last()
+            if last and last.chart_id:
+                try:
+                    last_num = int(last.chart_id.split('-')[-1])
+                except ValueError:
+                    last_num = 0
+            else:
+                last_num = 0
+            self.chart_id = f"{prefix}{last_num + 1:04d}"
+        return super().save(*args, **kwargs)
     
     def is_fully_staffed(self):
         # Placeholder for complex logic (e.g. min 3 members)
