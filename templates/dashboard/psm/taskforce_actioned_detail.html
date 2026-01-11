@@ -124,7 +124,7 @@
 
 {% block extra_js %}
 <script>
-    const API_URL = "{% url 'dashboard:staff_list_api' %}?department_ids={{ department_ids }}";
+    const API_URL = "{% url 'dashboard:staff_list_api' %}?department_ids={{ department_ids }}&role=LECTURER";
     const TF_WEIGHT = {{ taskforce.weightage }};
     const TF_STATUS = "{{ taskforce.status }}";
 

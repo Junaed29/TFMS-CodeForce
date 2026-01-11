@@ -149,7 +149,7 @@ class TaskForceMembershipForm(forms.ModelForm):
             staff_qs = User.objects.filter(
                 is_active=True,
                 department=department,
-                role__in=[User.Role.LECTURER, User.Role.DEAN, User.Role.HOD, User.Role.PSM]
+                role=User.Role.LECTURER
             )
             # Keep existing members selectable even if they belong to other departments.
             if self.instance.pk:
@@ -176,7 +176,7 @@ class PSMTaskForceMembershipForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         departments = kwargs.pop('departments', None)
         super().__init__(*args, **kwargs)
-        staff_qs = User.objects.filter(is_active=True)
+        staff_qs = User.objects.filter(is_active=True, role=User.Role.LECTURER)
         if departments is not None:
             staff_qs = staff_qs.filter(department__in=departments)
         if self.instance.pk:

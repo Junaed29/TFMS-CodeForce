@@ -187,7 +187,7 @@
 {% block extra_js %}
 <script>
     // State
-    const API_URL = "{% url 'dashboard:staff_list_api' %}?department_id={{ request.user.department.id|default:'' }}";
+    const API_URL = "{% url 'dashboard:staff_list_api' %}?department_id={{ request.user.department.id|default:'' }}&role=LECTURER";
     const TF_WEIGHT = {{ taskforce.weightage }};
     const TF_STATUS = "{{ taskforce.status }}";
     const COUNTS_IN_WORKLOAD = ['ACTIVE', 'DRAFT', 'SUBMITTED', 'APPROVED'].includes(TF_STATUS);
