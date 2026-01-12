@@ -308,10 +308,25 @@ class TaskForceUpdateView(RoleRequiredMixin, UpdateView):
         prev_status = TaskForce.objects.filter(pk=self.object.pk).values_list('status', flat=True).first()
         response = super().form_valid(form)
         new_status = self.object.status
-        if prev_status != new_status and new_status == 'INACTIVE':
+
+        if prev_status != 'INACTIVE' and new_status == 'INACTIVE':
+            if prev_status:
+                self.object.previous_status = prev_status
+                self.object.save(update_fields=['previous_status'])
+        elif prev_status == 'INACTIVE' and new_status == 'ACTIVE':
+            if self.object.previous_status and self.object.previous_status != 'INACTIVE':
+                self.object.status = self.object.previous_status
+                self.object.save(update_fields=['status'])
+                new_status = self.object.status
+        elif prev_status not in ('ACTIVE', 'INACTIVE') and new_status == 'ACTIVE':
+            self.object.status = prev_status
+            self.object.save(update_fields=['status'])
+            new_status = self.object.status
+
+        if prev_status != 'INACTIVE' and new_status == 'INACTIVE':
             log_action(self.request, self.request.user, "DEACTIVATE_TASKFORCE", "TaskForce", self.object.pk, f"Deactivated task force {self.object.name}")
-        elif prev_status != new_status and prev_status == 'INACTIVE' and new_status == 'ACTIVE':
-            log_action(self.request, self.request.user, "ACTIVATE_TASKFORCE", "TaskForce", self.object.pk, f"Activated task force {self.object.name}")
+        elif prev_status == 'INACTIVE' and new_status != 'INACTIVE':
+            log_action(self.request, self.request.user, "ACTIVATE_TASKFORCE", "TaskForce", self.object.pk, f"Reactivated task force {self.object.name} to {new_status}")
         else:
             log_action(self.request, self.request.user, "UPDATE_TASKFORCE", "TaskForce", self.object.pk, f"Updated task force {self.object.name}")
         return response

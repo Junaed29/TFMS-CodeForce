@@ -47,6 +47,12 @@ class TaskForce(models.Model):
     psm_adjusted_at = models.DateTimeField(blank=True, null=True)
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
+    previous_status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        blank=True,
+        null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
