@@ -110,7 +110,7 @@
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{% url 'dashboard:psm_taskforce_actioned_list' %}"
                                 class="btn btn-light text-muted">Back</a>
-                            <button type="button" onclick="submitForm()" class="btn btn-primary px-4 fw-bold">
+                            <button type="button" onclick="submitForm()" class="btn btn-primary px-4 fw-bold" id="save-changes-btn" disabled>
                                 Save Changes
                             </button>
                         </div>
@@ -139,6 +139,7 @@
     const memberSelect = document.getElementById('memberSelect');
     const countBadge = document.getElementById('count-badge');
     const previewDiv = document.getElementById('selection-preview');
+    const saveBtn = document.getElementById('save-changes-btn');
 
     document.addEventListener('DOMContentLoaded', async () => {
         PRELOADED_MEMBERS.forEach(m => {
@@ -159,6 +160,7 @@
             const id = e.target.value;
             updatePreview(id);
         });
+
     });
 
     function addToRegistry(member) {
@@ -290,6 +292,13 @@
         renderRoster();
     }
 
+    function updateSaveState() {
+        if (!saveBtn) return;
+        const membersChanged = selectedMembers.size !== preloadedMemberIds.size ||
+            [...selectedMembers].some(id => !preloadedMemberIds.has(String(id)));
+        saveBtn.disabled = !membersChanged;
+    }
+
     function renderRoster() {
         rosterBody.innerHTML = '';
         let count = 0;
@@ -310,6 +319,7 @@
         if (emptyState) {
             emptyState.classList.toggle('d-none', count !== 0);
         }
+        updateSaveState();
         return hasOverload;
     }
 
