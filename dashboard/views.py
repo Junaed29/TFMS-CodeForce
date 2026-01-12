@@ -356,8 +356,22 @@ class HODDashboardView(RoleRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.department:
             taskforces = TaskForce.objects.filter(departments=self.request.user.department).distinct()
+            status_filter = self.request.GET.get('status', '').strip()
+            query = self.request.GET.get('q', '').strip()
+
+            if status_filter:
+                taskforces = taskforces.filter(status=status_filter)
+            if query:
+                taskforces = taskforces.filter(
+                    Q(name__icontains=query) |
+                    Q(chart_id__icontains=query) |
+                    Q(description__icontains=query)
+                )
+
             context['taskforce_count'] = taskforces.count()
             context['taskforces'] = taskforces
+            context['selected_status'] = status_filter
+            context['query'] = query
         else:
             context['taskforce_count'] = 0
             context['taskforces'] = TaskForce.objects.none()
@@ -381,7 +395,26 @@ class HODTaskForceListView(RoleRequiredMixin, ListView):
         # Filter task forces that include the HOD's department
         if not self.request.user.department:
             return TaskForce.objects.none()
-        return TaskForce.objects.filter(departments=self.request.user.department).distinct()
+        taskforces = TaskForce.objects.filter(departments=self.request.user.department).distinct()
+        self.status_filter = self.request.GET.get('status', '').strip()
+        self.query = self.request.GET.get('q', '').strip()
+
+        if self.status_filter:
+            taskforces = taskforces.filter(status=self.status_filter)
+        if self.query:
+            taskforces = taskforces.filter(
+                Q(name__icontains=self.query) |
+                Q(chart_id__icontains=self.query) |
+                Q(description__icontains=self.query)
+            )
+
+        return taskforces
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['selected_status'] = getattr(self, 'status_filter', '')
+        context['query'] = getattr(self, 'query', '')
+        return context
 
 class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
     model = TaskForce

@@ -11,6 +11,39 @@
     </div>
 
     <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <form method="get" class="row g-2 align-items-end">
+                        <div class="col-sm-4 col-md-3">
+                            <label class="form-label fw-bold small">Status</label>
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                <option value="ACTIVE" {% if selected_status == "ACTIVE" %}selected{% endif %}>Active</option>
+                                <option value="DRAFT" {% if selected_status == "DRAFT" %}selected{% endif %}>Draft</option>
+                                <option value="SUBMITTED" {% if selected_status == "SUBMITTED" %}selected{% endif %}>Submitted</option>
+                                <option value="APPROVED" {% if selected_status == "APPROVED" %}selected{% endif %}>Approved</option>
+                                <option value="REJECTED" {% if selected_status == "REJECTED" %}selected{% endif %}>Rejected</option>
+                                <option value="INACTIVE" {% if selected_status == "INACTIVE" %}selected{% endif %}>Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-8 col-md-6">
+                            <label class="form-label fw-bold small">Search</label>
+                            <input type="text" name="q" class="form-control form-control-sm"
+                                placeholder="Search by name, ID, or description" value="{{ query|default:'' }}">
+                        </div>
+                        <div class="col-sm-12 col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-utm-primary flex-grow-1">Filter</button>
+                            <a href="{% url 'dashboard:hod_taskforce_list' %}"
+                                class="btn btn-sm btn-outline-secondary flex-grow-1">Clear</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
         {% for tf in taskforces %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 shadow-sm">
