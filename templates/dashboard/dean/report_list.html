@@ -25,8 +25,7 @@
                     <select name="department" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="">All Departments</option>
                         {% for dept in departments %}
-                        <option value="{{ dept.id }}" {% if request.GET.department==dept.id|stringformat:"s"
-                            %}selected{% endif %}>
+                        <option value="{{ dept.id }}" {% if request.GET.department == dept.id|stringformat:"s" %}selected{% endif %}>
                             {{ dept.name }}
                         </option>
                         {% endfor %}
