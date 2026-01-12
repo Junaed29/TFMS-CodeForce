@@ -829,6 +829,26 @@ class LecturerDashboardView(RoleRequiredMixin, TemplateView):
         # Count assignments
         context['assignment_count'] = TaskForce.objects.filter(members=self.request.user, status='APPROVED').count()
         context['inactive_count'] = TaskForce.objects.filter(members=self.request.user, status='INACTIVE').count()
+        from university.services import WorkloadService
+        workload = WorkloadService.get_workload_status(self.request.user)
+        status = workload.get('status', 'UNKNOWN')
+        badge_map = {
+            'OVERLOADED': 'bg-danger',
+            'UNDERLOADED': 'bg-warning text-dark',
+            'BALANCED': 'bg-success',
+            'UNKNOWN': 'bg-secondary'
+        }
+        border_map = {
+            'OVERLOADED': 'border-danger',
+            'UNDERLOADED': 'border-warning',
+            'BALANCED': 'border-success',
+            'UNKNOWN': 'border-secondary'
+        }
+        context['workload_total'] = workload.get('current_weightage', 0)
+        context['workload_message'] = workload.get('message', 'Workload unavailable')
+        context['workload_status'] = status
+        context['workload_badge_class'] = badge_map.get(status, 'bg-secondary')
+        context['workload_border_class'] = border_map.get(status, 'border-secondary')
         return context
 
 class LecturerTaskForceListView(RoleRequiredMixin, ListView):
