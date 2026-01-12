@@ -10,6 +10,13 @@ from django.urls import reverse_lazy
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.must_change_password:
+                return redirect('force_password_change')
+            return redirect('dashboard:home')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         """
         Override to prevent redirecting to unauthorized pages (e.g. Admin -> HOD page)
