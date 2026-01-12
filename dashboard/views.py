@@ -1,5 +1,5 @@
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
-from django.shortcuts import redirect
+from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View, DetailView
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import PasswordResetForm
@@ -556,8 +556,6 @@ class PSMTaskForceListView(RoleRequiredMixin, ListView):
             Q(assigned_psm__isnull=True) | Q(assigned_psm=self.request.user)
         ).order_by('-updated_at')
 
-from django.views.generic import DetailView
-
 class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
     model = TaskForce
     template_name = "dashboard/psm/taskforce_review.html"
@@ -1020,3 +1018,34 @@ class DeanDepartmentSummaryView(RoleRequiredMixin, TemplateView):
             })
         context['department_rows'] = rows
         return context
+
+class DeanDepartmentTaskForceListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/dean/department_taskforces.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.DEAN
+
+    def get_queryset(self):
+        department_id = self.kwargs['department_id']
+        self.department = get_object_or_404(Department, pk=department_id)
+        return (
+            TaskForce.objects.filter(departments=self.department)
+            .exclude(status='INACTIVE')
+            .prefetch_related('departments', 'members')
+            .distinct()
+            .order_by('-updated_at')
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['department'] = self.department
+        return context
+
+class DeanTaskForceDetailView(RoleRequiredMixin, DetailView):
+    model = TaskForce
+    template_name = "dashboard/dean/taskforce_detail.html"
+    context_object_name = "taskforce"
+    required_role = User.Role.DEAN
+
+    def get_queryset(self):
+        return TaskForce.objects.prefetch_related('departments', 'members', 'members__department')

@@ -22,6 +22,7 @@
                     <th>Total Task Forces</th>
                     <th>Total Weightage</th>
                     <th>Lecturers Assigned</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,10 +32,16 @@
                     <td>{{ row.taskforce_count }}</td>
                     <td>{{ row.total_weightage }}</td>
                     <td>{{ row.lecturer_count }}</td>
+                    <td>
+                        <a href="{% url 'dashboard:dean_department_taskforces' row.department.id %}"
+                            class="btn btn-sm btn-outline-dark">
+                            View Task Forces
+                        </a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-muted">No departments found.</td>
+                    <td colspan="5" class="text-center py-4 text-muted">No departments found.</td>
                 </tr>
                 {% endfor %}
             </tbody>

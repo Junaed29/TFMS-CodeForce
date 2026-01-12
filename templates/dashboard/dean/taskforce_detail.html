@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Task Force Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div>
+            <h1 class="h2 mb-1">{{ taskforce.name }}</h1>
+            <small class="text-muted">{{ taskforce.chart_id|default:"" }}</small>
+        </div>
+        <span class="badge bg-light text-dark border">{{ taskforce.get_status_display }}</span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold">Description</h5>
+                    <p class="text-muted">{{ taskforce.description|default:"No description provided."|linebreaks }}</p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-uppercase small text-muted">Departments</h6>
+                            <ul class="list-unstyled mb-3">
+                                {% for dept in taskforce.departments.all %}
+                                <li><i class="bi bi-building me-2"></i>{{ dept.name }}</li>
+                                {% empty %}
+                                <li class="text-muted">No departments assigned.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-uppercase small text-muted">Task Force Info</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>Weightage:</strong> {{ taskforce.weightage }}</li>
+                                <li><strong>Created:</strong> {{ taskforce.created_at|date:"M d, Y" }}</li>
+                                <li><strong>Updated:</strong> {{ taskforce.updated_at|date:"M d, Y" }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if taskforce.rejection_reason %}
+                    <div class="alert alert-danger mt-3">
+                        <strong>Rejection Reason:</strong> {{ taskforce.rejection_reason|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                    {% if taskforce.psm_adjustment_reason %}
+                    <div class="alert alert-warning mt-3">
+                        <strong>PSM Adjustment Reason:</strong> {{ taskforce.psm_adjustment_reason|linebreaks }}
+                        {% if taskforce.psm_adjusted_at %}
+                        <div class="small text-muted">Adjusted at {{ taskforce.psm_adjusted_at|date:"M d, Y H:i" }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold">Assignments</h5>
+                    <ul class="list-unstyled mb-4">
+                        <li>
+                            <strong>Submitted by:</strong>
+                            {% if taskforce.submitted_by %}
+                            {{ taskforce.submitted_by.get_full_name|default:taskforce.submitted_by.username }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </li>
+                        <li>
+                            <strong>Assigned PSM:</strong>
+                            {% if taskforce.assigned_psm %}
+                            {{ taskforce.assigned_psm.get_full_name|default:taskforce.assigned_psm.username }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </li>
+                        <li><strong>Status:</strong> {{ taskforce.get_status_display }}</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-uppercase small text-muted">Members ({{ taskforce.members.count }})</h6>
+                    {% if taskforce.members.exists %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in taskforce.members.all %}
+                                <tr>
+                                    <td>{{ member.get_full_name|default:member.username }}</td>
+                                    <td>{{ member.department.name|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-muted small">No members assigned.</div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{% url 'dashboard:dean_department_summary' %}" class="btn btn-sm btn-outline-secondary">
+                        Back to Departments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
