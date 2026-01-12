@@ -828,6 +828,7 @@ class LecturerDashboardView(RoleRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         # Count assignments
         context['assignment_count'] = TaskForce.objects.filter(members=self.request.user, status='APPROVED').count()
+        context['inactive_count'] = TaskForce.objects.filter(members=self.request.user, status='INACTIVE').count()
         return context
 
 class LecturerTaskForceListView(RoleRequiredMixin, ListView):
@@ -840,6 +841,18 @@ class LecturerTaskForceListView(RoleRequiredMixin, ListView):
         return TaskForce.objects.filter(
             members=self.request.user,
             status='APPROVED'
+        ).distinct().order_by('-updated_at')
+
+class LecturerTaskForceInactiveListView(RoleRequiredMixin, ListView):
+    model = TaskForce
+    template_name = "dashboard/lecturer/portfolio_inactive.html"
+    context_object_name = "taskforces"
+    required_role = User.Role.LECTURER
+
+    def get_queryset(self):
+        return TaskForce.objects.filter(
+            members=self.request.user,
+            status='INACTIVE'
         ).distinct().order_by('-updated_at')
 
 class LecturerTaskForceDetailView(RoleRequiredMixin, DetailView):
