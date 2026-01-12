@@ -818,6 +818,7 @@ class DeanDashboardView(RoleRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Executive Stats
+        context['active_taskforces_all'] = TaskForce.objects.exclude(status='INACTIVE').count()
         context['total_taskforces'] = TaskForce.objects.count()
         context['active_taskforces'] = TaskForce.objects.filter(status='APPROVED').count()
         context['pending_approvals'] = TaskForce.objects.filter(status='SUBMITTED').count()
