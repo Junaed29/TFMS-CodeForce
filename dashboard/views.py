@@ -10,6 +10,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
 from django.db.models import Q
@@ -874,6 +877,58 @@ class LecturerTaskForceInactiveListView(RoleRequiredMixin, ListView):
             members=self.request.user,
             status='INACTIVE'
         ).distinct().order_by('-updated_at')
+
+class LecturerTaskForceReportView(RoleRequiredMixin, View):
+    required_role = User.Role.LECTURER
+
+    def get(self, request, *args, **kwargs):
+        taskforces = TaskForce.objects.filter(
+            members=request.user,
+            status='APPROVED'
+        ).prefetch_related('departments').order_by('-updated_at')
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Lecturer Report"
+
+        headers = [
+            "Task Force ID",
+            "Task Force Name",
+            "Description",
+            "Departments",
+            "Status",
+            "Weightage",
+            "Created At",
+            "Updated At"
+        ]
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
+
+        total_weightage = 0
+        for tf in taskforces:
+            departments = ", ".join([d.name for d in tf.departments.all()])
+            ws.append([
+                tf.chart_id or "",
+                tf.name,
+                tf.description or "",
+                departments,
+                tf.get_status_display(),
+                tf.weightage,
+                tf.created_at.strftime("%Y-%m-%d") if tf.created_at else "",
+                tf.updated_at.strftime("%Y-%m-%d") if tf.updated_at else ""
+            ])
+            total_weightage += tf.weightage
+
+        ws.append([])
+        ws.append(["Total Weightage", total_weightage])
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="lecturer_taskforce_report.xlsx"'
+        wb.save(response)
+        return response
 
 class LecturerTaskForceDetailView(RoleRequiredMixin, DetailView):
     model = TaskForce
