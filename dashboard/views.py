@@ -837,12 +837,9 @@ class LecturerTaskForceListView(RoleRequiredMixin, ListView):
     required_role = User.Role.LECTURER
 
     def get_queryset(self):
-        # Lecturer sees Task Forces they are a member of OR chairman of
-        # Filter by APPROVED only? SRS doesn't specify, but usually they work on Approved ones.
-        # Let's show all for visibility, maybe filter stats in template.
-        from django.db.models import Q
         return TaskForce.objects.filter(
-            Q(members=self.request.user)
+            members=self.request.user,
+            status='APPROVED'
         ).distinct().order_by('-updated_at')
 
 class LecturerTaskForceDetailView(RoleRequiredMixin, DetailView):
