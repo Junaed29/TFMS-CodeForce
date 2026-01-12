@@ -699,7 +699,7 @@ class PSMTaskForceModifyView(RoleRequiredMixin, UpdateView):
         if not self.object.assigned_psm:
             self.object.assigned_psm = self.request.user
         self.object.save()
-        form.save_m2m()
+        self.object.members.set(form.cleaned_data.get('members', []))
 
         log_action(self.request, self.request.user, "MODIFY_APPROVE_TASKFORCE", "TaskForce", self.object.pk, f"Modified and approved task force: {self.object.name}")
 
@@ -784,7 +784,7 @@ class PSMActionedTaskForceUpdateView(RoleRequiredMixin, UpdateView):
         self.object.psm_adjustment_reason = justification
         self.object.psm_adjusted_at = timezone.now()
         self.object.save()
-        form.save_m2m()
+        self.object.members.set(form.cleaned_data.get('members', []))
 
         log_action(self.request, self.request.user, "UPDATE_LOCKED_TASKFORCE", "TaskForce", self.object.pk, f"Updated locked task force: {self.object.name}")
 

@@ -373,7 +373,11 @@
 
     window.submitForm = function () {
         syncHiddenInputs();
-        document.getElementById('mainForm').submit();
+        const form = document.getElementById('mainForm');
+        if (!form.reportValidity()) {
+            return;
+        }
+        form.requestSubmit();
     }
 </script>
 {% endblock %}
