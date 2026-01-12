@@ -467,6 +467,11 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         action = self.request.POST.get('action')
+        members = form.cleaned_data.get('members')
+
+        if action == 'submit' and (not members or members.count() < 1):
+            messages.error(self.request, "Please add at least one member before submitting for approval.")
+            return redirect('dashboard:hod_taskforce_manage', pk=self.object.pk)
         
         # Check if justification is needed but missing
         # (This is a fallback; frontend should catch this, but backend must enforce)

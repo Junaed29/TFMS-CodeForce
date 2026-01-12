@@ -131,10 +131,10 @@
                                 class="btn btn-light text-muted">Cancel</a>
 
                             {% if taskforce.status == 'ACTIVE' or taskforce.status == 'DRAFT' or taskforce.status == 'REJECTED' %}
-                            <button type="button" onclick="submitForm('save_draft')" class="btn btn-outline-secondary">
+                            <button type="button" onclick="submitForm('save_draft')" class="btn btn-outline-secondary" id="save-draft-btn">
                                 Save Draft
                             </button>
-                            <button type="button" onclick="trySubmit()" class="btn btn-primary px-4 fw-bold">
+                            <button type="button" onclick="trySubmit()" class="btn btn-primary px-4 fw-bold" id="submit-btn">
                                 {% if taskforce.status == 'SUBMITTED' %}
                                 Update Submission
                                 {% else %}
@@ -388,6 +388,14 @@
         renderRoster();
     }
 
+    function updateActionButtons() {
+        const saveBtn = document.getElementById('save-draft-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const disable = selectedMembers.size === 0;
+        if (saveBtn) saveBtn.disabled = disable;
+        if (submitBtn) submitBtn.disabled = disable;
+    }
+
     function renderRoster() {
         rosterBody.innerHTML = '';
         let count = 0;
@@ -409,6 +417,7 @@
         if (emptyState) {
             emptyState.classList.toggle('d-none', count !== 0);
         }
+        updateActionButtons();
         return hasOverload;
     }
 
