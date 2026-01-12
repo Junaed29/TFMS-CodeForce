@@ -845,6 +845,48 @@ class LecturerTaskForceListView(RoleRequiredMixin, ListView):
             Q(members=self.request.user)
         ).distinct().order_by('-updated_at')
 
+class LecturerTaskForceDetailView(RoleRequiredMixin, DetailView):
+    model = TaskForce
+    template_name = "dashboard/lecturer/taskforce_detail.html"
+    context_object_name = "taskforce"
+    required_role = User.Role.LECTURER
+
+    def get_queryset(self):
+        return TaskForce.objects.filter(members=self.request.user)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        remarks = request.POST.get('remarks', '').strip()
+        if not remarks:
+            messages.error(request, "Remarks cannot be empty.")
+            return redirect('dashboard:lecturer_taskforce_detail', pk=self.object.pk)
+
+        if not self.object.assigned_psm or not self.object.assigned_psm.email:
+            messages.error(request, "No PSM is assigned to this task force yet.")
+            return redirect('dashboard:lecturer_taskforce_detail', pk=self.object.pk)
+
+        subject = f"Lecturer Remarks: {self.object.name}"
+        context = {
+            'headline': "Lecturer Remarks Submitted",
+            'body_text': (
+                f"Lecturer: {request.user.get_full_name() or request.user.username}\n"
+                f"Task Force: {self.object.name} ({self.object.chart_id or 'No ID'})\n\n"
+                f"Remarks:\n{remarks}"
+            ),
+            'action_url': request.build_absolute_uri(reverse_lazy('dashboard:psm_taskforce_review', kwargs={'pk': self.object.pk})),
+            'action_text': "View Task Force"
+        }
+        html_message = render_to_string('email/notification.html', context)
+        plain_message = strip_tags(html_message)
+        try:
+            send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.assigned_psm.email], html_message=html_message)
+            messages.success(request, "Your remarks have been sent to the PSM.")
+        except Exception as e:
+            print(f"Error sending remarks email: {e}")
+            messages.error(request, "Failed to send remarks. Please try again later.")
+
+        return redirect('dashboard:lecturer_taskforce_detail', pk=self.object.pk)
+
 class DeanReportView(RoleRequiredMixin, ListView):
     model = TaskForce
     template_name = "dashboard/dean/report_list.html"

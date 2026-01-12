@@ -27,8 +27,7 @@
 
                     <!-- Chairman Badge Removed -->
 
-                    <p class="card-text text-muted small mt-3">{{ tf.description|truncatewords:20|default:"No
-                        description." }}</p>
+                    <p class="card-text text-muted small mt-3">{{ tf.description|default:"No description."|truncatewords:20 }}</p>
 
                     <div class="mb-3">
                         <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Departments</small>
@@ -42,11 +41,10 @@
                     <hr>
 
                     <div class="d-grid gap-2">
-                        <!-- Placeholder actions -->
-                        <button class="btn btn-sm btn-outline-dark" disabled><i
-                                class="bi bi-file-earmark-pdf me-2"></i>Download Report</button>
-                        <button class="btn btn-sm btn-outline-secondary" disabled><i
-                                class="bi bi-chat-left-text me-2"></i>Submit Remarks</button>
+                        <a href="{% url 'dashboard:lecturer_taskforce_detail' tf.pk %}"
+                            class="btn btn-sm btn-outline-dark">
+                            <i class="bi bi-eye me-2"></i>View Details
+                        </a>
                     </div>
                 </div>
                 <div class="card-footer bg-light small text-muted">
