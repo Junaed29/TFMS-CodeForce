@@ -6,8 +6,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 fw-bold mb-0">Executive Reports</h1>
 </div>
-<div class="row mb-4">
-    <div class="col-md-4">
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
         <div class="card h-100 shadow-sm border-primary">
             <div class="card-body text-center">
                 <h6 class="text-uppercase text-muted fw-bold small">Active Task Forces</h6>
@@ -19,25 +19,28 @@
             </div>
         </div>
     </div>
-</div>
-
-<div class="row">
     <div class="col-lg-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Download Reports</h5>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex align-items-center gap-2">
+                <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2">
+                    <i class="bi bi-file-earmark-arrow-down"></i>
+                </span>
+                <div>
+                    <h5 class="mb-0">Generates Report</h5>
+                    <small class="text-muted">Generate Excel exports for executive review.</small>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-body bg-light-subtle">
                 <form method="get" action="{% url 'dashboard:dean_taskforce_report_download' %}">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <label class="form-label fw-bold">Report Scope</label>
                             <select class="form-select" name="scope" id="report-scope">
                                 <option value="all">All Task Forces</option>
                                 <option value="department">Department-wise</option>
                             </select>
                         </div>
-                        <div class="col-md-5" id="department-select-wrapper" style="display: none;">
+                        <div class="col-md-6" id="department-select-wrapper" style="display: none;">
                             <label class="form-label fw-bold">Department</label>
                             <select class="form-select" name="department_id" id="department-select">
                                 <option value="">Select Department</option>
@@ -46,16 +49,18 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-12 col-md-4">
                             <button type="submit" class="btn btn-primary w-100">
-                                Download
+                                <i class="bi bi-download me-1"></i> Download Reports
                             </button>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <div class="text-muted small">
+                                Choose "All Task Forces" or select a department to download an Excel report.
+                            </div>
                         </div>
                     </div>
                 </form>
-                <p class="text-muted small mt-3 mb-0">
-                    Choose "All Task Forces" or select a department to download an Excel report.
-                </p>
             </div>
         </div>
     </div>
