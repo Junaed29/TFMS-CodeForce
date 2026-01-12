@@ -820,6 +820,7 @@ class DeanDashboardView(RoleRequiredMixin, TemplateView):
         context['total_taskforces'] = TaskForce.objects.count()
         context['active_taskforces'] = TaskForce.objects.filter(status='APPROVED').count()
         context['pending_approvals'] = TaskForce.objects.filter(status='SUBMITTED').count()
+        context['departments'] = Department.objects.all().order_by('name')
         return context
 
 class LecturerDashboardView(RoleRequiredMixin, TemplateView):
@@ -1049,3 +1050,62 @@ class DeanTaskForceDetailView(RoleRequiredMixin, DetailView):
 
     def get_queryset(self):
         return TaskForce.objects.prefetch_related('departments', 'members', 'members__department')
+
+class DeanTaskForceReportDownloadView(RoleRequiredMixin, View):
+    required_role = User.Role.DEAN
+
+    def get(self, request, *args, **kwargs):
+        scope = request.GET.get('scope', 'all')
+        department_id = request.GET.get('department_id')
+
+        queryset = TaskForce.objects.all().prefetch_related('departments', 'members')
+        filename = "taskforce_report_all.xlsx"
+
+        if scope == 'department':
+            if not department_id:
+                messages.error(request, "Please select a department for the report.")
+                return redirect('dashboard:dean')
+            department = get_object_or_404(Department, pk=department_id)
+            queryset = queryset.filter(departments=department).distinct()
+            safe_name = department.name.replace(" ", "_")
+            filename = f"taskforce_report_{safe_name}.xlsx"
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Task Forces"
+
+        headers = [
+            "Task Force ID",
+            "Task Force Name",
+            "Description",
+            "Departments",
+            "Status",
+            "Weightage",
+            "Members",
+            "Created At",
+            "Updated At",
+        ]
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
+
+        for tf in queryset.order_by('-updated_at'):
+            dept_names = ", ".join([d.name for d in tf.departments.all()])
+            ws.append([
+                tf.chart_id or "",
+                tf.name,
+                tf.description or "",
+                dept_names,
+                tf.get_status_display(),
+                tf.weightage,
+                tf.members.count(),
+                tf.created_at.strftime("%Y-%m-%d") if tf.created_at else "",
+                tf.updated_at.strftime("%Y-%m-%d") if tf.updated_at else "",
+            ])
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        wb.save(response)
+        return response

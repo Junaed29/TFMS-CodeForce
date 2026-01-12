@@ -9,7 +9,8 @@ from .views import (
     PSMTaskForceModifyView, PSMActionedTaskForceListView, PSMActionedTaskForceUpdateView,
     LecturerTaskForceListView, LecturerTaskForceInactiveListView, LecturerTaskForceDetailView,
     LecturerTaskForceReportView, DeanReportView, DeanDepartmentSummaryView,
-    DeanDepartmentTaskForceListView, DeanTaskForceDetailView, AuditLogListView, WorkloadSettingsView
+    DeanDepartmentTaskForceListView, DeanTaskForceDetailView, DeanTaskForceReportDownloadView,
+    AuditLogListView, WorkloadSettingsView
 )
 from .api import staff_list_api
 
@@ -59,6 +60,7 @@ urlpatterns = [
     path('dean/departments/<int:department_id>/', DeanDepartmentTaskForceListView.as_view(), name='dean_department_taskforces'),
     path('dean/taskforces/<int:pk>/', DeanTaskForceDetailView.as_view(), name='dean_taskforce_detail'),
     path('dean/reports/', DeanReportView.as_view(), name='dean_reports'),
+    path('dean/reports/download/', DeanTaskForceReportDownloadView.as_view(), name='dean_taskforce_report_download'),
     
     # Lecturer Views
     path('lecturer/', LecturerDashboardView.as_view(), name='lecturer'),

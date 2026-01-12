@@ -21,4 +21,64 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Download Reports</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'dashboard:dean_taskforce_report_download' %}">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">Report Scope</label>
+                            <select class="form-select" name="scope" id="report-scope">
+                                <option value="all">All Task Forces</option>
+                                <option value="department">Department-wise</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5" id="department-select-wrapper" style="display: none;">
+                            <label class="form-label fw-bold">Department</label>
+                            <select class="form-select" name="department_id" id="department-select">
+                                <option value="">Select Department</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <p class="text-muted small mt-3 mb-0">
+                    Choose "All Task Forces" or select a department to download an Excel report.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const scopeSelect = document.getElementById('report-scope');
+    const deptWrapper = document.getElementById('department-select-wrapper');
+    const deptSelect = document.getElementById('department-select');
+
+    function syncDepartmentField() {
+        const isDepartment = scopeSelect.value === 'department';
+        deptWrapper.style.display = isDepartment ? 'block' : 'none';
+        deptSelect.required = isDepartment;
+        if (!isDepartment) {
+            deptSelect.value = '';
+        }
+    }
+
+    scopeSelect.addEventListener('change', syncDepartmentField);
+    syncDepartmentField();
+</script>
 {% endblock %}
