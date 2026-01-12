@@ -9,13 +9,9 @@ class WorkloadService:
         Calculates the total weightage of ACTIVE or DRAFT task forces directly assigned to the user.
         Excludes task forces in other states (e.g. inactive, completed concepts).
         """
-        # We only count ACTIVE and DRAFT task forces for workload
-        # (Assuming DRAFT also counts because HOD is planning with them)
-        # OR: Should we only count ACTIVE? 
-        # Requirement says "Active Task Forces". Let's stick to ACTIVE and SUBMITTED/APPROVED.
-        # Drafts are tricky. Let's include everything that is NOT Inactive or Rejected.
-        
-        relevant_statuses = ['ACTIVE', 'SUBMITTED', 'APPROVED', 'DRAFT']
+        # Count workload only for non-draft, active pipeline task forces.
+        # Drafts should not impact lecturer workload.
+        relevant_statuses = ['ACTIVE', 'SUBMITTED', 'APPROVED']
         
         # Calculate as Member
         member_weightage = TaskForce.objects.filter(

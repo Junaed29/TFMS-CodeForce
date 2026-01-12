@@ -197,7 +197,7 @@
     }
 
     function shouldApplyWeightForMember(id) {
-        if (!['ACTIVE', 'DRAFT', 'SUBMITTED', 'APPROVED'].includes(TF_STATUS)) {
+        if (!['ACTIVE', 'SUBMITTED', 'APPROVED'].includes(TF_STATUS)) {
             return true;
         }
         return !preloadedMemberIds.has(String(id));
