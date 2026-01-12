@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Department Summary{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-2 border-bottom">
+        <div>
+            <h1 class="h2 mb-1">Department Summary</h1>
+            <p class="text-muted small mb-0">Totals exclude inactive task forces.</p>
+        </div>
+        <a href="{% url 'dashboard:dean_reports' %}" class="btn btn-sm btn-outline-secondary">
+            Browse All Task Forces
+        </a>
+    </div>
+
+    <div class="table-responsive bg-white shadow-sm rounded">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Department</th>
+                    <th>Total Task Forces</th>
+                    <th>Total Weightage</th>
+                    <th>Lecturers Assigned</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in department_rows %}
+                <tr>
+                    <td class="fw-bold">{{ row.department.name }}</td>
+                    <td>{{ row.taskforce_count }}</td>
+                    <td>{{ row.total_weightage }}</td>
+                    <td>{{ row.lecturer_count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">No departments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -995,3 +995,28 @@ class DeanReportView(RoleRequiredMixin, ListView):
         from university.models import Department
         context['departments'] = Department.objects.all()
         return context
+
+class DeanDepartmentSummaryView(RoleRequiredMixin, TemplateView):
+    template_name = "dashboard/dean/department_summary.html"
+    required_role = User.Role.DEAN
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        departments = Department.objects.all().prefetch_related('task_forces__members')
+        rows = []
+        for dept in departments:
+            taskforces = [tf for tf in dept.task_forces.all() if tf.status != 'INACTIVE']
+            total_weightage = sum(tf.weightage or 0 for tf in taskforces)
+            lecturer_ids = set()
+            for tf in taskforces:
+                for member in tf.members.all():
+                    if member.role == User.Role.LECTURER and member.department_id == dept.id:
+                        lecturer_ids.add(member.id)
+            rows.append({
+                'department': dept,
+                'taskforce_count': len(taskforces),
+                'total_weightage': total_weightage,
+                'lecturer_count': len(lecturer_ids),
+            })
+        context['department_rows'] = rows
+        return context
