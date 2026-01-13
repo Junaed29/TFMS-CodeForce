@@ -27,6 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['junaed.pythonanywhere.com', 'localhost', '127.0.0.1']
 
+# CSRF/SSL settings for production hosts
+CSRF_TRUSTED_ORIGINS = ['https://junaed.pythonanywhere.com']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 
 # Application definition
 
