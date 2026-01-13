@@ -112,12 +112,15 @@ class StaffCreateView(RoleRequiredMixin, CreateView):
         html_message = render_to_string('email/account_created.html', context)
         plain_message = strip_tags(html_message)
         
-        try:
-            send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
-            messages.success(self.request, f"Staff created. Email sent to {user.email}.")
-        except Exception as e:
-            print(f"Error sending email: {e}")
-            messages.warning(self.request, f"Staff created, but email failed to send. Temp Password: {temp_password}")
+        if is_throttled(self.request, f"mail:create_user:{user.pk}"):
+            messages.info(self.request, f"Staff created. Email already sent to {user.email}.")
+        else:
+            try:
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
+                messages.success(self.request, f"Staff created. Email sent to {user.email}.")
+            except Exception as e:
+                print(f"Error sending email: {e}")
+                messages.warning(self.request, f"Staff created, but email failed to send. Temp Password: {temp_password}")
 
         log_action(self.request, self.request.user, "CREATE_USER", "User", user.pk, f"Created user {user.username}")
         
@@ -145,15 +148,18 @@ class StaffPasswordResetView(RoleRequiredMixin, View):
             # Use PasswordResetForm to send the standard reset link
             form = PasswordResetForm({'email': user.email})
             if form.is_valid():
-                form.save(
-                    request=request,
-                    use_https=request.is_secure(),
-                    email_template_name='registration/password_reset_email.html',
-                    html_email_template_name='registration/password_reset_email.html',
-                    subject_template_name='registration/password_reset_subject.txt'
-                )
-                messages.success(request, f"Password reset link sent to {user.email}.")
-                log_action(request, request.user, "RESET_PASSWORD", "User", user.pk, f"Sent password reset link for {user.username}")
+                if is_throttled(request, f"mail:reset_link:{user.pk}"):
+                    messages.info(request, f"Password reset link already sent to {user.email}.")
+                else:
+                    form.save(
+                        request=request,
+                        use_https=request.is_secure(),
+                        email_template_name='registration/password_reset_email.html',
+                        html_email_template_name='registration/password_reset_email.html',
+                        subject_template_name='registration/password_reset_subject.txt'
+                    )
+                    messages.success(request, f"Password reset link sent to {user.email}.")
+                    log_action(request, request.user, "RESET_PASSWORD", "User", user.pk, f"Sent password reset link for {user.username}")
             else:
                  messages.error(request, f"Could not send reset link. Invalid email for user {user.username}?")
 
@@ -185,10 +191,11 @@ class StaffUnlockView(RoleRequiredMixin, View):
             html_message = render_to_string('email/notification.html', context)
             plain_message = strip_tags(html_message)
 
-            try:
-                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            if not is_throttled(request, f"mail:unlock_user:{user.pk}"):
+                try:
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
 
             messages.success(request, f"Account unlocked for {user.username}. Email sent.")
             log_action(request, request.user, "UNLOCK_USER", "User", user.pk, f"Unlocked user {user.username}")
@@ -223,10 +230,11 @@ class StaffDeactivateView(RoleRequiredMixin, View):
             html_message = render_to_string('email/notification.html', context)
             plain_message = strip_tags(html_message)
             
-            try:
-                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            if not is_throttled(request, f"mail:deactivate_user:{user.pk}"):
+                try:
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
 
             messages.success(request, f"User {user.username} deactivated successfully. Notification email sent.")
             log_action(request, request.user, "DEACTIVATE_USER", "User", user.pk, f"Deactivated user {user.username}. Reason: {justification}")
@@ -260,10 +268,11 @@ class StaffActivateView(RoleRequiredMixin, View):
             html_message = render_to_string('email/notification.html', context)
             plain_message = strip_tags(html_message)
             
-            try:
-                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            if not is_throttled(request, f"mail:activate_user:{user.pk}"):
+                try:
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
 
             messages.success(request, f"User {user.username} activated successfully. Notification email sent.")
             log_action(request, request.user, "ACTIVATE_USER", "User", user.pk, f"Activated user {user.username}")
@@ -507,10 +516,11 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
             html_message = render_to_string('email/notification.html', context)
             plain_message = strip_tags(html_message)
             
-            try:
-                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.request.user.email], html_message=html_message)
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            if not is_throttled(self.request, f"mail:hod_submit:{self.object.pk}:{self.request.user.pk}"):
+                try:
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.request.user.email], html_message=html_message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
 
             # Notify assigned PSM on resubmission
             if self.object.assigned_psm and self.object.assigned_psm.email:
@@ -523,10 +533,11 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
                 }
                 psm_html = render_to_string('email/notification.html', psm_context)
                 psm_plain = strip_tags(psm_html)
-                try:
-                    send_mail(psm_subject, psm_plain, settings.DEFAULT_FROM_EMAIL, [self.object.assigned_psm.email], html_message=psm_html)
-                except Exception as e:
-                    print(f"Error sending email to PSM: {e}")
+                if not is_throttled(self.request, f"mail:psm_resubmit:{self.object.pk}:{self.object.assigned_psm_id}"):
+                    try:
+                        send_mail(psm_subject, psm_plain, settings.DEFAULT_FROM_EMAIL, [self.object.assigned_psm.email], html_message=psm_html)
+                    except Exception as e:
+                        print(f"Error sending email to PSM: {e}")
                 
             messages.success(self.request, f"Task Force '{self.object.name}' submitted successfully. Confirmation email sent.")
             return response
@@ -554,7 +565,7 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
 
         return super().form_valid(form)
 
-from accounts.utils import log_action
+from accounts.utils import log_action, is_throttled
 import csv
 from django.http import HttpResponse
 
@@ -567,22 +578,34 @@ class AuditLogListView(RoleRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = AuditLog.objects.all().select_related('actor')
-        user_query = self.request.GET.get('user')
+        if self.request.method == 'POST':
+            user_query = self.request.POST.get('user')
+        else:
+            user_query = self.request.GET.get('user')
         if user_query:
             queryset = queryset.filter(actor__username__icontains=user_query)
         return queryset
 
-    def render_to_response(self, context, **response_kwargs):
-        # Handle Export
-        if self.request.GET.get('export') == 'csv':
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="audit_logs.csv"'
-            writer = csv.writer(response)
-            writer.writerow(['Timestamp', 'Actor', 'Action', 'Target Model', 'Target ID', 'Details', 'IP'])
-            for log in self.get_queryset():
-                writer.writerow([log.timestamp, log.actor, log.action, log.target_model, log.target_id, log.details, log.ip_address])
-            return response
-        return super().render_to_response(context, **response_kwargs)
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('export') != 'csv':
+            return redirect('dashboard:audit_log_list')
+
+        if not is_throttled(request, f"log:export_audit:{request.user.pk}"):
+            log_action(
+                request,
+                request.user,
+                "EXPORT_AUDIT_LOGS",
+                "AuditLog",
+                None,
+                "Exported audit logs to CSV"
+            )
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="audit_logs.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Timestamp', 'Actor', 'Action', 'Target Model', 'Target ID', 'Details', 'IP'])
+        for log in self.get_queryset():
+            writer.writerow([log.timestamp, log.actor, log.action, log.target_model, log.target_id, log.details, log.ip_address])
+        return response
 
 class PSMDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "dashboard/psm_dashboard.html"
@@ -655,10 +678,11 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
                 }
                 html_message = render_to_string('email/notification.html', context)
                 plain_message = strip_tags(html_message)
-                try:
-                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
-                except Exception as e:
-                    print(f"Error sending email: {e}")
+                if not is_throttled(request, f"mail:psm_approve:{self.object.pk}"):
+                    try:
+                        send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
+                    except Exception as e:
+                        print(f"Error sending email: {e}")
 
             messages.success(request, f"Task Force '{self.object.name}' approved.")
             return redirect('dashboard:psm_taskforce_list')
@@ -685,10 +709,11 @@ class PSMTaskForceDetailView(RoleRequiredMixin, DetailView):
                     }
                     html_message = render_to_string('email/notification.html', context)
                     plain_message = strip_tags(html_message)
-                    try:
-                        send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.submitted_by.email], html_message=html_message)
-                    except Exception as e:
-                        print(f"Error sending email: {e}")
+                    if not is_throttled(request, f"mail:psm_reject:{self.object.pk}"):
+                        try:
+                            send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.submitted_by.email], html_message=html_message)
+                        except Exception as e:
+                            print(f"Error sending email: {e}")
 
                 messages.success(request, f"Task Force '{self.object.name}' rejected.")
                 return redirect('dashboard:psm_taskforce_list')
@@ -769,10 +794,11 @@ class PSMTaskForceModifyView(RoleRequiredMixin, UpdateView):
             }
             html_message = render_to_string('email/notification.html', context)
             plain_message = strip_tags(html_message)
-            try:
-                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            if not is_throttled(self.request, f"mail:psm_modify:{self.object.pk}"):
+                try:
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
 
         messages.success(self.request, f"Task Force '{self.object.name}' modified and approved.")
         return redirect(self.success_url)
@@ -854,10 +880,11 @@ class PSMActionedTaskForceUpdateView(RoleRequiredMixin, UpdateView):
             }
             html_message = render_to_string('email/notification.html', context)
             plain_message = strip_tags(html_message)
-            try:
-                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            if not is_throttled(self.request, f"mail:psm_update:{self.object.pk}"):
+                try:
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, list(set(recipients)), html_message=html_message)
+                except Exception as e:
+                    print(f"Error sending email: {e}")
 
         messages.success(self.request, "Locked task force updated successfully.")
         return redirect(self.success_url)
@@ -935,10 +962,23 @@ class LecturerTaskForceReportView(RoleRequiredMixin, View):
     required_role = User.Role.LECTURER
 
     def get(self, request, *args, **kwargs):
+        return redirect('dashboard:lecturer')
+
+    def post(self, request, *args, **kwargs):
         taskforces = TaskForce.objects.filter(
             members=request.user,
             status='APPROVED'
         ).prefetch_related('departments').order_by('-updated_at')
+
+        if not is_throttled(request, f"log:export_lecturer:{request.user.pk}"):
+            log_action(
+                request,
+                request.user,
+                "EXPORT_LECTURER_REPORT",
+                "TaskForce",
+                None,
+                "Exported lecturer task force report (XLSX)"
+            )
 
         wb = Workbook()
         ws = wb.active
@@ -1016,12 +1056,15 @@ class LecturerTaskForceDetailView(RoleRequiredMixin, DetailView):
         }
         html_message = render_to_string('email/notification.html', context)
         plain_message = strip_tags(html_message)
-        try:
-            send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.assigned_psm.email], html_message=html_message)
-            messages.success(request, "Your remarks have been sent to the PSM.")
-        except Exception as e:
-            print(f"Error sending remarks email: {e}")
-            messages.error(request, "Failed to send remarks. Please try again later.")
+        if is_throttled(request, f"mail:lecturer_remarks:{self.object.pk}:{request.user.pk}"):
+            messages.info(request, "Remarks were sent recently. Please wait before resending.")
+        else:
+            try:
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [self.object.assigned_psm.email], html_message=html_message)
+                messages.success(request, "Your remarks have been sent to the PSM.")
+            except Exception as e:
+                print(f"Error sending remarks email: {e}")
+                messages.error(request, "Failed to send remarks. Please try again later.")
 
         return redirect('dashboard:lecturer_taskforce_detail', pk=self.object.pk)
 
@@ -1108,8 +1151,11 @@ class DeanTaskForceReportDownloadView(RoleRequiredMixin, View):
     required_role = User.Role.DEAN
 
     def get(self, request, *args, **kwargs):
-        scope = request.GET.get('scope', 'all')
-        department_id = request.GET.get('department_id')
+        return redirect('dashboard:dean')
+
+    def post(self, request, *args, **kwargs):
+        scope = request.POST.get('scope', 'all')
+        department_id = request.POST.get('department_id')
 
         queryset = TaskForce.objects.all().prefetch_related('departments', 'members')
         filename = "taskforce_report_all.xlsx"
@@ -1122,6 +1168,17 @@ class DeanTaskForceReportDownloadView(RoleRequiredMixin, View):
             queryset = queryset.filter(departments=department).distinct()
             safe_name = department.name.replace(" ", "_")
             filename = f"taskforce_report_{safe_name}.xlsx"
+
+        detail_scope = "all" if scope != "department" else f"department:{department_id}"
+        if not is_throttled(request, f"log:export_dean:{request.user.pk}:{detail_scope}"):
+            log_action(
+                request,
+                request.user,
+                "EXPORT_DEAN_REPORT",
+                "TaskForce",
+                None,
+                f"Exported dean task force report (XLSX), scope={detail_scope}"
+            )
 
         wb = Workbook()
         ws = wb.active

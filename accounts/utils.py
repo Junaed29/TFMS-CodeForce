@@ -1,4 +1,5 @@
 from .models import AuditLog
+import time
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -22,3 +23,14 @@ def log_action(request, user, action, target_model=None, target_id=None, details
         details=details,
         ip_address=ip
     )
+
+def is_throttled(request, key, window_seconds=3):
+    if not request:
+        return False
+    now = time.time()
+    last = request.session.get(key)
+    if last and now - last < window_seconds:
+        return True
+    request.session[key] = now
+    request.session.modified = True
+    return False

@@ -6,9 +6,16 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">System Audit Logs</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-sm btn-light fw-bold">
-            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export to CSV
-        </a>
+        <form method="post" action="{% url 'dashboard:audit_log_list' %}" class="d-inline">
+            {% csrf_token %}
+            {% if request.GET.user %}
+            <input type="hidden" name="user" value="{{ request.GET.user }}">
+            {% endif %}
+            <input type="hidden" name="export" value="csv">
+            <button type="submit" class="btn btn-sm btn-light fw-bold">
+                <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export to CSV
+            </button>
+        </form>
     </div>
 </div>
 
