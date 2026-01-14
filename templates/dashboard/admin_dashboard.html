@@ -73,7 +73,7 @@
                 <tbody>
                     {% for log in recent_logs %}
                     <tr>
-                        <td class="text-nowrap text-muted">{{ log.timestamp|date:"M d, H:i" }}</td>
+                        <td class="text-nowrap text-muted">{{ log.timestamp|date:"M d, Y H:i" }}</td>
                         <td class="fw-bold">{{ log.actor.username|default:"System" }}</td>
                         <td>
                             <span
