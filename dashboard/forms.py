@@ -42,6 +42,16 @@ class StaffForm(forms.ModelForm):
         if role in dept_roles and not department:
             self.add_error('department', f"Department is required for {role}.")
             
+        if role == User.Role.HOD and department:
+            existing = User.objects.filter(
+                role=User.Role.HOD,
+                department=department
+            )
+            if self.instance.pk:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                self.add_error('department', "This department already has an assigned HOD.")
+
         # Clear department for roles that don't need it
         if role not in dept_roles and department:
             cleaned_data['department'] = None
