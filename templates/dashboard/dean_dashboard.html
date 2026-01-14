@@ -27,21 +27,28 @@
                 </span>
                 <div>
                     <h5 class="mb-0">Generates Report</h5>
-                    <small class="text-muted">Generate Excel exports for executive review.</small>
+                    <small class="text-muted">Generate PDF or Excel exports for executive review.</small>
                 </div>
             </div>
             <div class="card-body bg-light-subtle">
                 <form method="post" action="{% url 'dashboard:dean_taskforce_report_download' %}">
                     {% csrf_token %}
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold">Report Scope</label>
                             <select class="form-select" name="scope" id="report-scope">
                                 <option value="all">All Task Forces</option>
                                 <option value="department">Department-wise</option>
                             </select>
                         </div>
-                        <div class="col-md-6" id="department-select-wrapper" style="display: none;">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Report Type</label>
+                            <select class="form-select" name="report_type">
+                                <option value="excel">Excel</option>
+                                <option value="pdf">PDF</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4" id="department-select-wrapper" style="display: none;">
                             <label class="form-label fw-bold">Department</label>
                             <select class="form-select" name="department_id" id="department-select">
                                 <option value="">Select Department</option>
@@ -57,7 +64,7 @@
                         </div>
                         <div class="col-12 col-md-8">
                             <div class="text-muted small">
-                                Choose "All Task Forces" or select a department to download an Excel report.
+                                Choose a scope and report type, then download the report.
                             </div>
                         </div>
                     </div>

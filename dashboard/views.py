@@ -11,13 +11,58 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.http import HttpResponse
+import textwrap
 from openpyxl import Workbook
 from openpyxl.styles import Font
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
 from django.db.models import Q
 from university.models import TaskForce, Department, WorkloadSettings
 from .forms import StaffForm, TaskForceForm, DepartmentForm, WorkloadSettingsForm
+
+def build_taskforce_pdf_response(taskforces, title, filename):
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    pdf = canvas.Canvas(response, pagesize=letter)
+    width, height = letter
+    left_margin = 40
+    bottom_margin = 50
+    line_height = 14
+
+    def start_page():
+        nonlocal y
+        pdf.setFont("Helvetica-Bold", 14)
+        pdf.drawString(left_margin, height - 50, title)
+        pdf.setFont("Helvetica", 10)
+        y = height - 70
+
+    y = height - 70
+    start_page()
+
+    for tf in taskforces:
+        dept_names = ", ".join([d.name for d in tf.departments.all()])
+        lines = [
+            f"Task Force: {tf.name} ({tf.chart_id or ''})",
+            f"Status: {tf.get_status_display()} | Weightage: {tf.weightage} | Members: {tf.members.count()}",
+            f"Departments: {dept_names or '-'}",
+        ]
+        if tf.description:
+            lines.append(f"Description: {tf.description}")
+
+        for line in lines:
+            for chunk in textwrap.wrap(line, width=110) or [""]:
+                if y < bottom_margin:
+                    pdf.showPage()
+                    start_page()
+                pdf.drawString(left_margin, y, chunk)
+                y -= line_height
+        y -= 6
+
+    pdf.save()
+    return response
 
 class DashboardDispatcher(LoginRequiredMixin, TemplateView):
     """Redirects authenticated users to their specific role dashboard."""
@@ -965,19 +1010,29 @@ class LecturerTaskForceReportView(RoleRequiredMixin, View):
         return redirect('dashboard:lecturer')
 
     def post(self, request, *args, **kwargs):
+        report_type = request.POST.get('report_type', 'excel').lower()
+        if report_type not in ('excel', 'pdf'):
+            report_type = 'excel'
         taskforces = TaskForce.objects.filter(
             members=request.user,
             status='APPROVED'
-        ).prefetch_related('departments').order_by('-updated_at')
+        ).prefetch_related('departments', 'members').order_by('-updated_at')
 
-        if not is_throttled(request, f"log:export_lecturer:{request.user.pk}"):
+        if not is_throttled(request, f"log:export_lecturer:{request.user.pk}:{report_type}"):
             log_action(
                 request,
                 request.user,
                 "EXPORT_LECTURER_REPORT",
                 "TaskForce",
                 None,
-                "Exported lecturer task force report (XLSX)"
+                f"Exported lecturer task force report ({report_type.upper()})"
+            )
+
+        if report_type == 'pdf':
+            return build_taskforce_pdf_response(
+                taskforces,
+                "Lecturer Task Force Report",
+                "lecturer_taskforce_report.pdf"
             )
 
         wb = Workbook()
@@ -1156,6 +1211,9 @@ class DeanTaskForceReportDownloadView(RoleRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         scope = request.POST.get('scope', 'all')
         department_id = request.POST.get('department_id')
+        report_type = request.POST.get('report_type', 'excel').lower()
+        if report_type not in ('excel', 'pdf'):
+            report_type = 'excel'
 
         queryset = TaskForce.objects.all().prefetch_related('departments', 'members')
         filename = "taskforce_report_all.xlsx"
@@ -1170,15 +1228,22 @@ class DeanTaskForceReportDownloadView(RoleRequiredMixin, View):
             filename = f"taskforce_report_{safe_name}.xlsx"
 
         detail_scope = "all" if scope != "department" else f"department:{department_id}"
-        if not is_throttled(request, f"log:export_dean:{request.user.pk}:{detail_scope}"):
+        if not is_throttled(request, f"log:export_dean:{request.user.pk}:{detail_scope}:{report_type}"):
             log_action(
                 request,
                 request.user,
                 "EXPORT_DEAN_REPORT",
                 "TaskForce",
                 None,
-                f"Exported dean task force report (XLSX), scope={detail_scope}"
+                f"Exported dean task force report ({report_type.upper()}), scope={detail_scope}"
             )
+
+        if report_type == 'pdf':
+            pdf_name = filename.replace(".xlsx", ".pdf")
+            title = "Dean Task Force Report"
+            if scope == 'department':
+                title = f"Dean Task Force Report - {department.name}"
+            return build_taskforce_pdf_response(queryset.order_by('-updated_at'), title, pdf_name)
 
         wb = Workbook()
         ws = wb.active
