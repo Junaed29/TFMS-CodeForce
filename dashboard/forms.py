@@ -30,6 +30,11 @@ class StaffForm(forms.ModelForm):
              'last_name': forms.TextInput(attrs={'class': 'form-control'}),
              'role': forms.Select(attrs={'class': 'form-select', 'id': 'id_role'}), # Added ID for JS targeting
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['username'].disabled = True
     
     def clean(self):
         cleaned_data = super().clean()
