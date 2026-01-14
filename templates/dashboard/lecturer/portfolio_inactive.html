@@ -14,11 +14,11 @@
             <div class="card h-100 shadow-sm border-secondary">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
+                        <div class="flex-grow-1 me-2" style="min-width: 0;">
                             <h5 class="card-title text-truncate fw-bold mb-0" title="{{ tf.name }}">{{ tf.name }}</h5>
                             <small class="text-muted">{{ tf.chart_id|default:"" }}</small>
                         </div>
-                        <span class="badge bg-secondary">Inactive</span>
+                        <span class="badge bg-secondary flex-shrink-0">Inactive</span>
                     </div>
 
                     <p class="card-text text-muted small mt-3">{{ tf.description|default:"No description."|truncatewords:20 }}</p>
