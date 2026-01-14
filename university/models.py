@@ -53,6 +53,7 @@ class TaskForce(models.Model):
         blank=True,
         null=True
     )
+    hod_justification = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

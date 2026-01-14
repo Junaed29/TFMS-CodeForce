@@ -18,6 +18,12 @@
                         <h5 class="fw-bold">Description</h5>
                         <p class="text-muted">{{ taskforce.description|default:"No description provided."|linebreaks }}
                         </p>
+                        {% if taskforce.hod_justification %}
+                        <div class="mt-3 text-muted">
+                            <span class="fw-semibold">Justification:</span>
+                            <div>{{ taskforce.hod_justification|linebreaks }}</div>
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">

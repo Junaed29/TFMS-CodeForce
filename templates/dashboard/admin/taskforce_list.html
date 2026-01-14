@@ -42,6 +42,11 @@
             </div>
             <div class="card-body">
                 <p class="card-text text-muted">{{ tf.description|truncatewords:20 }}</p>
+                {% if tf.hod_justification %}
+                <p class="card-text text-muted small mb-0">
+                    <span class="fw-semibold">Justification:</span> {{ tf.hod_justification|truncatewords:20 }}
+                </p>
+                {% endif %}
             </div>
             <div class="card-footer bg-white border-top-0 pb-3 text-end">
                 <a href="{% url 'dashboard:taskforce_edit' tf.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>

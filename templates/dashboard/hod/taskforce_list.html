@@ -47,29 +47,34 @@
         {% for tf in taskforces %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="card-title mb-0 text-truncate" title="{{ tf.name }}">{{ tf.name }}</h5>
-                        <small class="text-muted">{{ tf.chart_id|default:"" }}</small>
-                    </div>
-                    {% if tf.status == 'ACTIVE' %}
-                    <span class="badge bg-success">Active</span>
-                    {% elif tf.status == 'DRAFT' %}
-                    <span class="badge bg-secondary">Draft</span>
-                    {% elif tf.status == 'SUBMITTED' %}
-                    <span class="badge bg-warning text-dark">Submitted</span>
-                    {% elif tf.status == 'APPROVED' %}
-                    <span class="badge bg-primary">Approved</span>
-                    {% elif tf.status == 'REJECTED' %}
-                    <span class="badge bg-danger">Rejected</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Inactive</span>
-                    {% endif %}
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1 me-2" style="min-width: 0;">
+                    <h5 class="card-title mb-0 text-truncate" title="{{ tf.name }}">{{ tf.name }}</h5>
+                    <small class="text-muted">{{ tf.chart_id|default:"" }}</small>
                 </div>
-                <div class="card-body">
-                    <p class="card-text text-muted">{{ tf.description|truncatewords:20 }}</p>
+                {% if tf.status == 'ACTIVE' %}
+                <span class="badge bg-success flex-shrink-0">Active</span>
+                {% elif tf.status == 'DRAFT' %}
+                <span class="badge bg-secondary flex-shrink-0">Draft</span>
+                {% elif tf.status == 'SUBMITTED' %}
+                <span class="badge bg-warning text-dark flex-shrink-0">Submitted</span>
+                {% elif tf.status == 'APPROVED' %}
+                <span class="badge bg-primary flex-shrink-0">Approved</span>
+                {% elif tf.status == 'REJECTED' %}
+                <span class="badge bg-danger flex-shrink-0">Rejected</span>
+                {% else %}
+                <span class="badge bg-secondary flex-shrink-0">Inactive</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">{{ tf.description|truncatewords:20 }}</p>
+                {% if tf.hod_justification %}
+                <p class="card-text text-muted small mb-0">
+                    <span class="fw-semibold">Justification:</span> {{ tf.hod_justification|truncatewords:16 }}
+                </p>
+                {% endif %}
 
-                    <div class="mb-3">
+                <div class="mb-3">
                         <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Departments</small>
                         <div class="text-dark small">
                             {% for dept in tf.departments.all %}

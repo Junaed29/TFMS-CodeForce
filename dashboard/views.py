@@ -537,15 +537,8 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
             form.instance.status = 'SUBMITTED'
             form.instance.submitted_by = self.request.user
             # Check for justification if provided
-            justification = self.request.POST.get('justification')
-            if justification:
-                # Append to description or save to a new field if we had one.
-                # Use Case says "Prompt Justification". 
-                # Let's append to description for now as 'Justification: ...'
-                # Or usage rejection_reason? No, that's for PSM.
-                # Let's append to description.
-                current_desc = form.instance.description or ""
-                form.instance.description = f"{current_desc}\n\n[Justification]: {justification}".strip()
+            justification = self.request.POST.get('justification', '').strip()
+            form.instance.hod_justification = justification or None
 
             response = super().form_valid(form)
             log_action(self.request, self.request.user, "SUBMIT_TASKFORCE", "TaskForce", self.object.pk, "Submitted for approval")
