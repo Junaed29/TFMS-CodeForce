@@ -7,7 +7,7 @@
     <h2 class="h4 mb-0">Lecturer Dashboard</h2>
     {% if assignment_count > 0 %}
     <form method="post" action="{% url 'dashboard:lecturer_taskforce_report' %}"
-        class="d-inline-flex align-items-center gap-2 flex-nowrap">
+        class="d-inline-flex align-items-center gap-2 flex-nowrap" id="report-download-form">
         {% csrf_token %}
         <select name="report_type" class="form-select form-select-sm">
             <option value="excel">Excel</option>
@@ -16,8 +16,14 @@
         <button type="submit" class="btn btn-outline-success btn-sm text-nowrap">
             <i class="bi bi-download me-1"></i> Download Report
         </button>
+        <button type="button" class="report-status-dot bg-success" id="report-status-toggle"
+            aria-pressed="false" title="Click to toggle PDF fail simulation"></button>
     </form>
     {% endif %}
+</div>
+
+<div class="alert alert-danger d-none" id="report-fail-alert">
+    Document generation failed. Please try again or contact to 'Codeforce'.
 </div>
 
 <div class="row">
@@ -50,4 +56,55 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const reportForm = document.getElementById('report-download-form');
+    const reportToggle = document.getElementById('report-status-toggle');
+    const reportAlert = document.getElementById('report-fail-alert');
+
+    if (reportToggle) {
+        reportToggle.addEventListener('click', () => {
+            const isFail = reportToggle.classList.contains('bg-danger');
+            reportToggle.classList.toggle('bg-danger', !isFail);
+            reportToggle.classList.toggle('bg-success', isFail);
+            reportToggle.setAttribute('aria-pressed', String(!isFail));
+        });
+    }
+
+    if (reportForm) {
+        reportForm.addEventListener('submit', (event) => {
+            if (!reportToggle) {
+                return;
+            }
+            const isFail = reportToggle.classList.contains('bg-danger');
+            if (isFail) {
+                event.preventDefault();
+                if (reportAlert) {
+                    reportAlert.classList.remove('d-none');
+                    reportAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        });
+    }
+</script>
+
+<style>
+    .report-status-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        padding: 0;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+        display: inline-block;
+        flex: 0 0 16px;
+    }
+
+    .report-status-dot:focus-visible {
+        outline: 2px solid #0d6efd;
+        outline-offset: 2px;
+    }
+</style>
 {% endblock %}
