@@ -35,6 +35,7 @@ class StaffForm(forms.ModelForm):
         cleaned_data = super().clean()
         role = cleaned_data.get('role')
         department = cleaned_data.get('department')
+        email = cleaned_data.get('email')
         
         # Roles requiring department
         dept_roles = [User.Role.HOD, User.Role.LECTURER]
@@ -51,6 +52,13 @@ class StaffForm(forms.ModelForm):
                 existing = existing.exclude(pk=self.instance.pk)
             if existing.exists():
                 self.add_error('department', "This department already has an assigned HOD.")
+
+        if email:
+            existing_email = User.objects.filter(email__iexact=email)
+            if self.instance.pk:
+                existing_email = existing_email.exclude(pk=self.instance.pk)
+            if existing_email.exists():
+                self.add_error('email', "This email address is already in use.")
 
         # Clear department for roles that don't need it
         if role not in dept_roles and department:
