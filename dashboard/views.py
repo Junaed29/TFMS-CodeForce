@@ -18,7 +18,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from .mixins import RoleRequiredMixin
 from accounts.models import User, AuditLog
-from django.db.models import Q
+from django.db.models import Q, Case, When, IntegerField
 from university.models import TaskForce, Department, WorkloadSettings
 from .forms import StaffForm, TaskForceForm, DepartmentForm, WorkloadSettingsForm
 
@@ -127,7 +127,16 @@ class StaffListView(RoleRequiredMixin, ListView):
     required_role = User.Role.ADMIN
     
     def get_queryset(self):
-         return User.objects.all().order_by('-date_joined')
+         role_order = Case(
+             When(role=User.Role.ADMIN, then=0),
+             When(role=User.Role.HOD, then=1),
+             When(role=User.Role.DEAN, then=2),
+             When(role=User.Role.LECTURER, then=3),
+             When(role=User.Role.PSM, then=4),
+             default=5,
+             output_field=IntegerField()
+         )
+         return User.objects.all().order_by(role_order, 'username')
 
 class StaffCreateView(RoleRequiredMixin, CreateView):
     model = User

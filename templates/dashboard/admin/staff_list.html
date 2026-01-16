@@ -8,10 +8,59 @@
     <a href="{% url 'dashboard:staff_add' %}" class="btn btn-utm-primary">Add New Staff</a>
 </div>
 
+<style>
+    .staff-group.collapse.show,
+    .staff-group.collapsing {
+        display: table-row-group;
+    }
+
+    .staff-table {
+        table-layout: fixed;
+    }
+
+    .staff-table .truncate-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .staff-table .staff-actions {
+        white-space: nowrap;
+    }
+
+    .staff-group {
+        transition: opacity 0.15s ease;
+    }
+
+    .staff-group.collapsing {
+        opacity: 0.6;
+    }
+
+    .staff-group.collapse.show {
+        opacity: 1;
+    }
+
+    .staff-group-toggle .bi {
+        transition: transform 0.2s ease;
+    }
+
+    .staff-group-toggle[aria-expanded="false"] .bi {
+        transform: rotate(-90deg);
+    }
+</style>
+
 <div class="card shadow-sm">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <table class="table table-hover align-middle staff-table">
+                <colgroup>
+                    <col style="width: 12%;">
+                    <col style="width: 15%;">
+                    <col style="width: 30%;">
+                    <col style="width: 12%;">
+                    <col style="width: 12%;">
+                    <col style="width: 19%;">
+                </colgroup>
                 <thead class="table-light">
                     <tr>
                         <th>Staff ID</th>
@@ -22,12 +71,39 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
+                {% if staff_list %}
+                {% regroup staff_list by role as staff_groups %}
+                {% for group in staff_groups %}
                 <tbody>
-                    {% for staff in staff_list %}
+                    <tr class="table-light">
+                        <td colspan="6">
+                            <button class="btn w-100 text-start p-0 staff-group-toggle" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#role-group-{{ forloop.counter }}" aria-expanded="true"
+                                aria-controls="role-group-{{ forloop.counter }}">
+                                <div class="d-flex justify-content-between align-items-center bg-white border rounded shadow-sm px-3 py-2">
+                                    <div class="fw-bold text-uppercase small">
+                                        {% if group.grouper == 'ADMIN' %}Admin
+                                        {% elif group.grouper == 'HOD' %}HOD
+                                        {% elif group.grouper == 'DEAN' %}Management
+                                        {% elif group.grouper == 'LECTURER' %}Lecturer
+                                        {% elif group.grouper == 'PSM' %}PSM
+                                        {% else %}Other{% endif %}
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-dark border">{{ group.list|length }}</span>
+                                        <i class="bi bi-chevron-down text-muted"></i>
+                                    </div>
+                                </div>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody class="staff-group collapse show" id="role-group-{{ forloop.counter }}">
+                    {% for staff in group.list %}
                     <tr>
                         <td><span class="badge bg-secondary">{{ staff.staff_id|default:"-" }}</span></td>
-                        <td>{{ staff.username }}</td>
-                        <td>{{ staff.get_full_name }}</td>
+                        <td><div class="truncate-cell" title="{{ staff.username }}">{{ staff.username }}</div></td>
+                        <td><div class="truncate-cell" title="{{ staff.get_full_name }}">{{ staff.get_full_name }}</div></td>
                         <td>
                             {% if staff.role == 'ADMIN' %}<span class="badge bg-danger">Admin</span>
                             {% elif staff.role == 'HOD' %}<span class="badge bg-success">HOD</span>
@@ -46,7 +122,7 @@
                             <span class="badge bg-success">Active</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="staff-actions">
                             <div class="d-flex gap-2">
                                 {% if staff.is_locked %}
                                 <form action="{% url 'dashboard:staff_unlock' staff.pk %}" method="post">
@@ -63,12 +139,16 @@
                             </div>
                         </td>
                     </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-4">No staff members found.</td>
-                    </tr>
                     {% endfor %}
                 </tbody>
+                {% endfor %}
+                {% else %}
+                <tbody>
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No staff members found.</td>
+                    </tr>
+                </tbody>
+                {% endif %}
             </table>
         </div>
     </div>
