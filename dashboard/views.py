@@ -127,16 +127,55 @@ class StaffListView(RoleRequiredMixin, ListView):
     required_role = User.Role.ADMIN
     
     def get_queryset(self):
+         queryset = User.objects.all()
+         staff_id = self.request.GET.get('staff_id', '').strip()
+         username = self.request.GET.get('username', '').strip()
+         name = self.request.GET.get('name', '').strip()
+         role = self.request.GET.get('role', '').strip()
+         status = self.request.GET.get('status', '').strip()
+
+         if staff_id:
+             queryset = queryset.filter(staff_id__icontains=staff_id)
+         if username:
+             queryset = queryset.filter(username__icontains=username)
+         if name:
+             queryset = queryset.filter(
+                 Q(first_name__icontains=name) |
+                 Q(last_name__icontains=name)
+             )
+         if role:
+             queryset = queryset.filter(role=role)
+         if status:
+             if status == 'inactive':
+                 queryset = queryset.filter(is_active=False)
+             elif status == 'locked':
+                 queryset = queryset.filter(is_locked=True, is_active=True)
+             elif status == 'first_time':
+                 queryset = queryset.filter(must_change_password=True, is_active=True)
+             elif status == 'active':
+                 queryset = queryset.filter(is_active=True, is_locked=False, must_change_password=False)
+
          role_order = Case(
              When(role=User.Role.ADMIN, then=0),
              When(role=User.Role.HOD, then=1),
-             When(role=User.Role.DEAN, then=2),
-             When(role=User.Role.LECTURER, then=3),
-             When(role=User.Role.PSM, then=4),
+             When(role=User.Role.PSM, then=2),
+             When(role=User.Role.DEAN, then=3),
+             When(role=User.Role.LECTURER, then=4),
              default=5,
              output_field=IntegerField()
          )
-         return User.objects.all().order_by(role_order, 'username')
+         return queryset.order_by(role_order, 'username')
+
+    def get_context_data(self, **kwargs):
+         context = super().get_context_data(**kwargs)
+         context['filters'] = {
+             'staff_id': self.request.GET.get('staff_id', '').strip(),
+             'username': self.request.GET.get('username', '').strip(),
+             'name': self.request.GET.get('name', '').strip(),
+             'role': self.request.GET.get('role', '').strip(),
+             'status': self.request.GET.get('status', '').strip(),
+         }
+         return context
 
 class StaffCreateView(RoleRequiredMixin, CreateView):
     model = User

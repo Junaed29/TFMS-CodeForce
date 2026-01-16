@@ -51,6 +51,52 @@
 
 <div class="card shadow-sm">
     <div class="card-body">
+        <div class="card border-0 bg-light mb-3">
+            <div class="card-body py-3">
+                <form method="get" class="row g-2 align-items-end">
+                    <div class="col-sm-6 col-md-2">
+                        <label class="form-label fw-bold small">Staff ID</label>
+                        <input type="text" name="staff_id" class="form-control form-control-sm"
+                            value="{{ filters.staff_id }}" placeholder="Staff ID">
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <label class="form-label fw-bold small">Username</label>
+                        <input type="text" name="username" class="form-control form-control-sm"
+                            value="{{ filters.username }}" placeholder="Username">
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <label class="form-label fw-bold small">Name</label>
+                        <input type="text" name="name" class="form-control form-control-sm"
+                            value="{{ filters.name }}" placeholder="Name">
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <label class="form-label fw-bold small">Role</label>
+                        <select name="role" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            <option value="ADMIN" {% if filters.role == "ADMIN" %}selected{% endif %}>Admin</option>
+                            <option value="HOD" {% if filters.role == "HOD" %}selected{% endif %}>HOD</option>
+                            <option value="PSM" {% if filters.role == "PSM" %}selected{% endif %}>PSM</option>
+                            <option value="DEAN" {% if filters.role == "DEAN" %}selected{% endif %}>Management</option>
+                            <option value="LECTURER" {% if filters.role == "LECTURER" %}selected{% endif %}>Lecturer</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <label class="form-label fw-bold small">Status</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            <option value="active" {% if filters.status == "active" %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if filters.status == "inactive" %}selected{% endif %}>Inactive</option>
+                            <option value="locked" {% if filters.status == "locked" %}selected{% endif %}>Locked</option>
+                            <option value="first_time" {% if filters.status == "first_time" %}selected{% endif %}>First Time</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-utm-primary flex-grow-1">Filter</button>
+                        <a href="{% url 'dashboard:staff_list' %}" class="btn btn-sm btn-outline-secondary flex-grow-1">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle staff-table">
                 <colgroup>
