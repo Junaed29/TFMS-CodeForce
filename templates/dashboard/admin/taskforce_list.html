@@ -31,6 +31,29 @@
     .tf-group-toggle[aria-expanded="false"] .bi {
         transform: rotate(-90deg);
     }
+
+    .tf-group-header {
+        background: linear-gradient(90deg, #f8f9fb 0%, #f1f4f8 100%);
+        border-top: 1px solid #e0e6ee;
+        border-bottom: 1px solid #e0e6ee;
+    }
+
+    .tf-group-header .group-pill {
+        background: #ffffff;
+        border: 1px solid #e3e8ef;
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+    }
+
+    .tf-group-header .group-pill .status-chip {
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .tf-group-header .group-pill .group-count {
+        font-size: 0.75rem;
+        background: #f3f6fa;
+    }
 </style>
 
 <div class="card shadow-sm">
@@ -103,23 +126,26 @@
                 {% regroup taskforces by status as status_groups %}
                 {% for group in status_groups %}
                 <tbody>
-                    <tr class="table-light">
+                    <tr class="tf-group-header">
                         <td colspan="6">
                             <button class="btn w-100 text-start p-0 tf-group-toggle" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#status-group-{{ forloop.counter }}" aria-expanded="true"
                                 aria-controls="status-group-{{ forloop.counter }}">
-                                <div class="d-flex justify-content-between align-items-center bg-white border rounded shadow-sm px-3 py-2">
-                                    <div class="fw-bold text-uppercase small">
-                                        {% if group.grouper == 'ACTIVE' %}Active
-                                        {% elif group.grouper == 'DRAFT' %}Draft
-                                        {% elif group.grouper == 'SUBMITTED' %}Submitted
-                                        {% elif group.grouper == 'APPROVED' %}Approved
-                                        {% elif group.grouper == 'REJECTED' %}Rejected
-                                        {% elif group.grouper == 'INACTIVE' %}Inactive
-                                        {% else %}Other{% endif %}
+                                <div class="d-flex justify-content-between align-items-center group-pill rounded px-3 py-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill bg-light text-dark border status-chip">
+                                            {% if group.grouper == 'ACTIVE' %}Active
+                                            {% elif group.grouper == 'DRAFT' %}Draft
+                                            {% elif group.grouper == 'SUBMITTED' %}Submitted
+                                            {% elif group.grouper == 'APPROVED' %}Approved
+                                            {% elif group.grouper == 'REJECTED' %}Rejected
+                                            {% elif group.grouper == 'INACTIVE' %}Inactive
+                                            {% else %}Other{% endif %}
+                                        </span>
+                                        <span class="text-muted small">Task Forces</span>
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-light text-dark border">{{ group.list|length }}</span>
+                                        <span class="badge text-dark border group-count">{{ group.list|length }}</span>
                                         <i class="bi bi-chevron-down text-muted"></i>
                                     </div>
                                 </div>
