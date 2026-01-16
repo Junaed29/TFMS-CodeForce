@@ -47,6 +47,29 @@
     .staff-group-toggle[aria-expanded="false"] .bi {
         transform: rotate(-90deg);
     }
+
+    .staff-group-header {
+        background: linear-gradient(90deg, #f8f9fb 0%, #f1f4f8 100%);
+        border-top: 1px solid #e0e6ee;
+        border-bottom: 1px solid #e0e6ee;
+    }
+
+    .staff-group-header .group-pill {
+        background: #ffffff;
+        border: 1px solid #e3e8ef;
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+    }
+
+    .staff-group-header .group-pill .status-chip {
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .staff-group-header .group-pill .group-count {
+        font-size: 0.75rem;
+        background: #f3f6fa;
+    }
 </style>
 
 <div class="card shadow-sm">
@@ -121,22 +144,25 @@
                 {% regroup staff_list by role as staff_groups %}
                 {% for group in staff_groups %}
                 <tbody>
-                    <tr class="table-light">
+                    <tr class="staff-group-header">
                         <td colspan="6">
                             <button class="btn w-100 text-start p-0 staff-group-toggle" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#role-group-{{ forloop.counter }}" aria-expanded="true"
                                 aria-controls="role-group-{{ forloop.counter }}">
-                                <div class="d-flex justify-content-between align-items-center bg-white border rounded shadow-sm px-3 py-2">
-                                    <div class="fw-bold text-uppercase small">
-                                        {% if group.grouper == 'ADMIN' %}Admin
-                                        {% elif group.grouper == 'HOD' %}HOD
-                                        {% elif group.grouper == 'DEAN' %}Management
-                                        {% elif group.grouper == 'LECTURER' %}Lecturer
-                                        {% elif group.grouper == 'PSM' %}PSM
-                                        {% else %}Other{% endif %}
+                                <div class="d-flex justify-content-between align-items-center group-pill rounded px-3 py-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill bg-light text-dark border status-chip">
+                                            {% if group.grouper == 'ADMIN' %}Admin
+                                            {% elif group.grouper == 'HOD' %}HOD
+                                            {% elif group.grouper == 'DEAN' %}Management
+                                            {% elif group.grouper == 'LECTURER' %}Lecturer
+                                            {% elif group.grouper == 'PSM' %}PSM
+                                            {% else %}Other{% endif %}
+                                        </span>
+                                        <span class="text-muted small">Staff</span>
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-light text-dark border">{{ group.list|length }}</span>
+                                        <span class="badge text-dark border group-count">{{ group.list|length }}</span>
                                         <i class="bi bi-chevron-down text-muted"></i>
                                     </div>
                                 </div>
