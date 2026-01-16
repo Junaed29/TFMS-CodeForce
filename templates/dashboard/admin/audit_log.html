@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tz %}
 
 {% block title %}System Audit Logs{% endblock %}
 
@@ -54,7 +55,7 @@
         <tbody>
             {% for log in logs %}
             <tr>
-                <td class="small text-muted text-nowrap">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                <td class="small text-muted text-nowrap">{{ log.timestamp|localtime|date:"M d, Y H:i:s" }}</td>
                 <td class="fw-bold text-primary">{{ log.actor.username|default:"System" }}</td>
                 <td>
                     <span
