@@ -8,56 +8,164 @@
     <a href="{% url 'dashboard:taskforce_add' %}" class="btn btn-utm-primary">Create Task Force</a>
 </div>
 
-<div class="row">
-    {% for tf in taskforces %}
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h5 class="card-title text-primary fw-bold mb-0">{{ tf.name }}</h5>
-                        <small class="text-muted">{{ tf.chart_id|default:"" }}</small>
+<style>
+    .tf-group.collapse.show,
+    .tf-group.collapsing {
+        display: table-row-group;
+    }
+
+    .tf-table {
+        table-layout: fixed;
+    }
+
+    .tf-table .truncate-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tf-group-toggle .bi {
+        transition: transform 0.2s ease;
+    }
+
+    .tf-group-toggle[aria-expanded="false"] .bi {
+        transform: rotate(-90deg);
+    }
+</style>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="card border-0 bg-light mb-3">
+            <div class="card-body py-3">
+                <form method="get" class="row g-2 align-items-end">
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label fw-bold small">Task Force ID</label>
+                        <input type="text" name="tf_id" class="form-control form-control-sm"
+                            value="{{ filters.tf_id }}" placeholder="Task Force ID">
                     </div>
-                    {% if tf.status == 'ACTIVE' %}
-                    <span class="badge bg-success">Active</span>
-                    {% elif tf.status == 'DRAFT' %}
-                    <span class="badge bg-secondary">Draft</span>
-                    {% elif tf.status == 'SUBMITTED' %}
-                    <span class="badge bg-warning text-dark">Submitted</span>
-                    {% elif tf.status == 'APPROVED' %}
-                    <span class="badge bg-primary">Approved</span>
-                    {% elif tf.status == 'REJECTED' %}
-                    <span class="badge bg-danger">Rejected</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Inactive</span>
-                    {% endif %}
-                </div>
-                <small class="text-muted">
-                    {% for dept in tf.departments.all %}
-                    {{ dept.name }}{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                    No Department
-                    {% endfor %}
-                </small>
-            </div>
-            <div class="card-body">
-                <p class="card-text text-muted">{{ tf.description|truncatewords:20 }}</p>
-                {% if tf.hod_justification %}
-                <p class="card-text text-muted small mb-0">
-                    <span class="fw-semibold">Justification:</span> {{ tf.hod_justification|truncatewords:20 }}
-                </p>
-                {% endif %}
-            </div>
-            <div class="card-footer bg-white border-top-0 pb-3 text-end">
-                <a href="{% url 'dashboard:taskforce_edit' tf.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label fw-bold small">Name</label>
+                        <input type="text" name="name" class="form-control form-control-sm"
+                            value="{{ filters.name }}" placeholder="Task Force Name">
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <label class="form-label fw-bold small">Status</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            <option value="ACTIVE" {% if filters.status == "ACTIVE" %}selected{% endif %}>Active</option>
+                            <option value="DRAFT" {% if filters.status == "DRAFT" %}selected{% endif %}>Draft</option>
+                            <option value="SUBMITTED" {% if filters.status == "SUBMITTED" %}selected{% endif %}>Submitted</option>
+                            <option value="APPROVED" {% if filters.status == "APPROVED" %}selected{% endif %}>Approved</option>
+                            <option value="REJECTED" {% if filters.status == "REJECTED" %}selected{% endif %}>Rejected</option>
+                            <option value="INACTIVE" {% if filters.status == "INACTIVE" %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-md-2">
+                        <label class="form-label fw-bold small">Department</label>
+                        <select name="department" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if filters.department == dept.id|stringformat:"s" %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-utm-primary flex-grow-1">Filter</button>
+                        <a href="{% url 'dashboard:taskforce_list' %}" class="btn btn-sm btn-outline-secondary flex-grow-1">Clear</a>
+                    </div>
+                </form>
             </div>
         </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle tf-table">
+                <colgroup>
+                    <col style="width: 26%;">
+                    <col style="width: 16%;">
+                    <col style="width: 14%;">
+                    <col style="width: 22%;">
+                    <col style="width: 10%;">
+                    <col style="width: 12%;">
+                </colgroup>
+                <thead class="table-light">
+                    <tr>
+                        <th>Task Force</th>
+                        <th>ID</th>
+                        <th>Status</th>
+                        <th>Departments</th>
+                        <th>Members</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                {% if taskforces %}
+                {% regroup taskforces by status as status_groups %}
+                {% for group in status_groups %}
+                <tbody>
+                    <tr class="table-light">
+                        <td colspan="6">
+                            <button class="btn w-100 text-start p-0 tf-group-toggle" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#status-group-{{ forloop.counter }}" aria-expanded="true"
+                                aria-controls="status-group-{{ forloop.counter }}">
+                                <div class="d-flex justify-content-between align-items-center bg-white border rounded shadow-sm px-3 py-2">
+                                    <div class="fw-bold text-uppercase small">
+                                        {% if group.grouper == 'ACTIVE' %}Active
+                                        {% elif group.grouper == 'DRAFT' %}Draft
+                                        {% elif group.grouper == 'SUBMITTED' %}Submitted
+                                        {% elif group.grouper == 'APPROVED' %}Approved
+                                        {% elif group.grouper == 'REJECTED' %}Rejected
+                                        {% elif group.grouper == 'INACTIVE' %}Inactive
+                                        {% else %}Other{% endif %}
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-dark border">{{ group.list|length }}</span>
+                                        <i class="bi bi-chevron-down text-muted"></i>
+                                    </div>
+                                </div>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody class="tf-group collapse show" id="status-group-{{ forloop.counter }}">
+                    {% for tf in group.list %}
+                    <tr>
+                        <td>
+                            <div class="truncate-cell fw-semibold" title="{{ tf.name }}">{{ tf.name }}</div>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ tf.chart_id|default:"-" }}</span></td>
+                        <td>
+                            {% if tf.status == 'ACTIVE' %}<span class="badge bg-success">Active</span>
+                            {% elif tf.status == 'DRAFT' %}<span class="badge bg-secondary">Draft</span>
+                            {% elif tf.status == 'SUBMITTED' %}<span class="badge bg-warning text-dark">Submitted</span>
+                            {% elif tf.status == 'APPROVED' %}<span class="badge bg-primary">Approved</span>
+                            {% elif tf.status == 'REJECTED' %}<span class="badge bg-danger">Rejected</span>
+                            {% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+                        </td>
+                        <td class="truncate-cell" title="{% for dept in tf.departments.all %}{{ dept.name }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}">
+                            {% for dept in tf.departments.all %}
+                            {{ dept.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                            -
+                            {% endfor %}
+                        </td>
+                        <td class="ps-4">{{ tf.members.count }}</td>
+                        <td class="ps-3">
+                            <a href="{% url 'dashboard:taskforce_edit' tf.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% endfor %}
+                {% else %}
+                <tbody>
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No task forces created yet.</td>
+                    </tr>
+                </tbody>
+                {% endif %}
+            </table>
+        </div>
     </div>
-    {% empty %}
-    <div class="col-12 text-center py-5">
-        <h4 class="text-muted">No task forces created yet.</h4>
-        <p>Get started by creating a new task force.</p>
-    </div>
-    {% endfor %}
 </div>
 {% endblock %}

@@ -382,6 +382,45 @@ class TaskForceListView(RoleRequiredMixin, ListView):
     context_object_name = "taskforces"
     required_role = User.Role.ADMIN
 
+    def get_queryset(self):
+        queryset = TaskForce.objects.all().prefetch_related('departments')
+        status = self.request.GET.get('status', '').strip()
+        department_id = self.request.GET.get('department', '').strip()
+        tf_id = self.request.GET.get('tf_id', '').strip()
+        name = self.request.GET.get('name', '').strip()
+
+        if status:
+            queryset = queryset.filter(status=status)
+        if department_id:
+            queryset = queryset.filter(departments__id=department_id)
+        if tf_id:
+            queryset = queryset.filter(chart_id__icontains=tf_id)
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
+        status_order = Case(
+            When(status='ACTIVE', then=0),
+            When(status='DRAFT', then=1),
+            When(status='SUBMITTED', then=2),
+            When(status='APPROVED', then=3),
+            When(status='REJECTED', then=4),
+            When(status='INACTIVE', then=5),
+            default=6,
+            output_field=IntegerField()
+        )
+        return queryset.order_by(status_order, 'name').distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['departments'] = Department.objects.all().order_by('name')
+        context['filters'] = {
+            'status': self.request.GET.get('status', '').strip(),
+            'department': self.request.GET.get('department', '').strip(),
+            'tf_id': self.request.GET.get('tf_id', '').strip(),
+            'name': self.request.GET.get('name', '').strip(),
+        }
+        return context
+
 class TaskForceCreateView(RoleRequiredMixin, CreateView):
     model = TaskForce
     form_class = TaskForceForm
