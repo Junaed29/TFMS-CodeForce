@@ -44,7 +44,6 @@ class CustomLoginView(LoginView):
         """
         user = form.get_user()
         if user.is_locked and not (user.is_superuser or user.role == User.Role.ADMIN):
-            messages.error(self.request, "Your account has been locked due to multiple failed login attempts. Please contact the Administrator.")
             return self.form_invalid(form)
             
         # Reset attempts on success
