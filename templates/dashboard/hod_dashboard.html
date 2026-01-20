@@ -84,8 +84,13 @@
 
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <span class="text-muted small">Members: {{ tf.members.count }}</span>
+                    {% if tf.status == 'SUBMITTED' or tf.status == 'APPROVED' or tf.status == 'INACTIVE' %}
+                    <a href="{% url 'dashboard:hod_taskforce_detail' tf.pk %}"
+                        class="btn btn-sm btn-outline-secondary">View Members</a>
+                    {% else %}
                     <a href="{% url 'dashboard:hod_taskforce_manage' tf.pk %}"
                         class="btn btn-sm btn-utm-primary">Manage Members</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
