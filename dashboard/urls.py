@@ -5,7 +5,7 @@ from .views import (
     StaffListView, StaffCreateView, StaffUpdateView, StaffPasswordResetView, StaffUnlockView, 
     StaffDeactivateView, StaffActivateView, TaskForceListView, TaskForceCreateView,
     TaskForceUpdateView, DepartmentListView, DepartmentCreateView, DepartmentUpdateView, HODTaskForceListView,
-    HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
+    HODTaskForceDetailView, HODTaskForceUpdateView, PSMTaskForceListView, PSMTaskForceDetailView,
     PSMTaskForceModifyView, PSMActionedTaskForceListView, PSMActionedTaskForceUpdateView,
     LecturerTaskForceListView, LecturerTaskForceInactiveListView, LecturerTaskForceDetailView,
     LecturerTaskForceReportView, DeanReportView, DeanDepartmentSummaryView,
@@ -43,6 +43,7 @@ urlpatterns = [
     # HOD Views
     path('hod/', HODDashboardView.as_view(), name='hod'),
     path('hod/taskforce/', HODTaskForceListView.as_view(), name='hod_taskforce_list'),
+    path('hod/taskforce/<int:pk>/view/', HODTaskForceDetailView.as_view(), name='hod_taskforce_detail'),
     path('hod/taskforce/<int:pk>/manage/', HODTaskForceUpdateView.as_view(), name='hod_taskforce_manage'),
     
     # PSM Views

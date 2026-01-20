@@ -518,7 +518,7 @@ class HODDashboardView(RoleRequiredMixin, TemplateView):
             context['taskforces'] = TaskForce.objects.none()
         return context
 
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
 from .forms import (
     StaffForm, TaskForceForm, DepartmentForm, TaskForceMembershipForm, PSMTaskForceMembershipForm
@@ -689,6 +689,21 @@ class HODTaskForceUpdateView(RoleRequiredMixin, UpdateView):
             return response
 
         return super().form_valid(form)
+
+class HODTaskForceDetailView(RoleRequiredMixin, DetailView):
+    model = TaskForce
+    template_name = "dashboard/hod/taskforce_detail.html"
+    context_object_name = "taskforce"
+    required_role = User.Role.HOD
+
+    def get_queryset(self):
+        if not self.request.user.department:
+            return TaskForce.objects.none()
+        return (
+            TaskForce.objects.filter(departments=self.request.user.department)
+            .prefetch_related('departments', 'members', 'members__department')
+            .select_related('submitted_by', 'assigned_psm')
+        )
 
 from accounts.utils import log_action, is_throttled
 import csv
