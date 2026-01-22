@@ -39,10 +39,14 @@ These steps assume you only have an internet connection and a computer. If you a
 7. Create a `.env` file for email (optional but recommended):
    ```bash
    cat > .env <<'EOF'
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
    EMAIL_HOST_USER=your-email@example.com
    EMAIL_HOST_PASSWORD=your_app_password
+   DEFAULT_FROM_EMAIL=TFMS Support <your-email@example.com>
    EOF
    ```
+   Important: If `EMAIL_HOST_USER` or `EMAIL_HOST_PASSWORD` is missing, email features will not send.
 8. Initialize the database:
    ```bash
    python3 manage.py migrate
@@ -92,9 +96,13 @@ These steps assume you only have an internet connection and a computer. If you a
    ```
    Paste and save:
    ```ini
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
    EMAIL_HOST_USER=your-email@example.com
    EMAIL_HOST_PASSWORD=your_app_password
+   DEFAULT_FROM_EMAIL=TFMS Support <your-email@example.com>
    ```
+   Important: If `EMAIL_HOST_USER` or `EMAIL_HOST_PASSWORD` is missing, email features will not send.
 8. Initialize the database:
    ```powershell
    python manage.py migrate
@@ -192,20 +200,39 @@ Git is a version control tool that downloads the project and lets you update it 
 
 | Variable | Required | Purpose | Safe local default |
 | --- | --- | --- | --- |
-| `EMAIL_HOST_USER` | Optional | SMTP username and default "from" email in `tfms_core/settings.py` | Leave blank to skip email sending |
+| `EMAIL_HOST` | Optional | SMTP host (hardcoded to `smtp.gmail.com` in `tfms_core/settings.py`) | `smtp.gmail.com` |
+| `EMAIL_PORT` | Optional | SMTP port (hardcoded to `587` in `tfms_core/settings.py`) | `587` |
+| `EMAIL_HOST_USER` | Optional | SMTP username; `DEFAULT_FROM_EMAIL` is set to this in `tfms_core/settings.py` | Leave blank to skip email sending |
 | `EMAIL_HOST_PASSWORD` | Optional | SMTP password or app password | Leave blank to skip email sending |
-| `DATABASE_URL` | Optional | Overrides the default SQLite DB via `dj_database_url.config` | Leave unset to use `db.sqlite3` |
+| `DEFAULT_FROM_EMAIL` | Optional | Display name/from address (not read from env in current code) | Edit `tfms_core/settings.py` to use this |
+| `DATABASE_URL` | Optional | Overrides the default SQLite DB via `dj_database_url.config` | If you use `db.sqlite3`, you do not need this |
 
 Notes:
+- Important: If `EMAIL_HOST_USER` or `EMAIL_HOST_PASSWORD` is missing, email features will not send.
 - `tfms_core/settings.py` hardcodes `DEBUG=True`, `SECRET_KEY`, `EMAIL_HOST=smtp.gmail.com`, `EMAIL_PORT=587`, and `EMAIL_USE_TLS=True`. To change these, edit `tfms_core/settings.py`.
 - `Local_Run_Guide.md` shows extra keys (`DEBUG`, `SECRET_KEY`, `EMAIL_HOST`, `EMAIL_PORT`, `DEFAULT_FROM_EMAIL`), but only `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and `DATABASE_URL` are read from the environment in the current code.
 
 Example `.env`:
 ```ini
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
 EMAIL_HOST_USER=your-email@example.com
 EMAIL_HOST_PASSWORD=your_app_password
+DEFAULT_FROM_EMAIL=TFMS Support <your-email@example.com>
 # DATABASE_URL=postgresql://user:password@localhost:5432/tfms
 ```
+
+### Gmail App Password (EMAIL_HOST_PASSWORD)
+
+If you use Gmail as shown above, you must use a Google App Password (free) instead of your normal Gmail password.
+
+1. Go to `https://myaccount.google.com/security` and enable **2-Step Verification**.
+2. Open `https://myaccount.google.com/apppasswords` and sign in.
+3. Under **Select app**, choose **Mail**. Under **Select device**, choose **Other (Custom name)** and enter `TFMS Local`.
+4. Click **Generate**, then copy the 16-character password.
+5. Paste it into `.env` as `EMAIL_HOST_PASSWORD`.
+
+If the App Passwords page looks different or is not available, search the internet for "Google app password" and follow the latest official Google instructions.
 
 ### macOS
 1. Create a virtual environment:
@@ -223,8 +250,11 @@ EMAIL_HOST_PASSWORD=your_app_password
 4. Create `.env` if you have not already:
    ```bash
    cat > .env <<'EOF'
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
    EMAIL_HOST_USER=your-email@example.com
    EMAIL_HOST_PASSWORD=your_app_password
+   DEFAULT_FROM_EMAIL=TFMS Support <your-email@example.com>
    EOF
    ```
 
@@ -247,8 +277,11 @@ EMAIL_HOST_PASSWORD=your_app_password
    ```
    Paste and save:
    ```ini
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
    EMAIL_HOST_USER=your-email@example.com
    EMAIL_HOST_PASSWORD=your_app_password
+   DEFAULT_FROM_EMAIL=TFMS Support <your-email@example.com>
    ```
 
 ## What you need to provide
@@ -337,34 +370,6 @@ Checked `requirements.txt`, `tfms_core/settings.py`, `manage.py`, `Local_Run_Gui
    ```
    Then run `\dt` and exit with `\q`.
 
-## Running the Project Locally
-
-### macOS
-1. Activate your virtual environment (if not already):
-   ```bash
-   source venv/bin/activate
-   ```
-2. Start the server:
-   ```bash
-   python3 manage.py runserver
-   ```
-3. Open `http://127.0.0.1:8000/` (login) or `http://127.0.0.1:8000/admin/` (Django admin).
-4. Stop the server with `Ctrl+C`.
-
-### Windows
-1. Activate your virtual environment (if not already):
-   ```bat
-   venv\Scripts\activate
-   ```
-2. Start the server:
-   ```bat
-   python manage.py runserver
-   ```
-3. Open `http://127.0.0.1:8000/` (login) or `http://127.0.0.1:8000/admin/` (Django admin).
-4. Stop the server with `Ctrl+C`.
-
-Server logs and errors appear in the terminal where you ran `runserver`. Django will auto-reload when you change Python or template files.
-
 ## Create an Admin / Superuser
 
 ### macOS
@@ -385,57 +390,90 @@ Password rules in `tfms_core/settings.py`:
 - Minimum length 8, maximum length 16
 - Must contain at least one letter and one number
 
-Log in at `http://127.0.0.1:8000/accounts/login/` or `http://127.0.0.1:8000/admin/`.
+After you start the server (see **Running the Project Locally**), log in at `http://127.0.0.1:8000/accounts/login/` or `http://127.0.0.1:8000/`.
 
-## Updating the Project (After Changes)
-
-Use this when you want to pull new code from GitHub or after you modify files locally.
+## Running the Project Locally
 
 ### macOS
-1. Stop the server (`Ctrl+C`) and make sure the virtual environment is active:
+1. Activate your virtual environment (if not already):
    ```bash
    source venv/bin/activate
    ```
-2. Pull the latest changes:
+2. Make sure you have completed **Create an Admin / Superuser** so the admin can enter the admin dashboard.
+3. Start the server:
    ```bash
-   git pull
+   python3 manage.py runserver
    ```
-3. Update dependencies (safe to run every time):
+4. Open `http://127.0.0.1:8000/` and log in.
+5. Stop the server with `Ctrl+C`.
+
+### Windows
+1. Activate your virtual environment (if not already):
+   ```bat
+   venv\Scripts\activate
+   ```
+2. Make sure you have completed **Create an Admin / Superuser** so the admin can enter the admin dashboard.
+3. Start the server:
+   ```bat
+   python manage.py runserver
+   ```
+4. Open `http://127.0.0.1:8000/` and log in.
+5. Stop the server with `Ctrl+C`.
+
+Server logs and errors appear in the terminal where you ran `runserver`. Django will auto-reload when you change Python or template files.
+
+## Updating the Project Using AI
+
+If you are new and want to change this project (add a feature, fix a bug, update wording), you can use an AI coding assistant. A safe workflow:
+
+1. Make sure the project runs first (finish **Quick Start**).
+2. Tell the AI exactly what you want to change and ask it to read the relevant files (for example: `README.md`, `Local_Run_Guide.md`, `tfms_core/settings.py`, `accounts/`, `dashboard/`, `university/`, `templates/`).
+3. Ask the AI to explain the plan before changing files, then apply the changes.
+4. Review the changes before running the app.
+5. Run the update steps below based on what was changed.
+
+Important:
+- Do not paste secrets into an AI chat (real passwords, tokens, or private emails).
+- If the AI adds new packages, it should update `requirements.txt`.
+- If the AI changes Django models, you must create migrations.
+
+### macOS
+1. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+2. If `requirements.txt` changed, reinstall dependencies:
    ```bash
    python3 -m pip install -r requirements.txt
    ```
-4. Apply database migrations (needed if models changed):
+3. If models changed, create and apply migrations:
    ```bash
+   python3 manage.py makemigrations
    python3 manage.py migrate
    ```
-5. Restart the server:
+4. Start the server:
    ```bash
    python3 manage.py runserver
    ```
 
 ### Windows
-1. Stop the server (`Ctrl+C`) and make sure the virtual environment is active:
+1. Activate the virtual environment:
    ```bat
    venv\Scripts\activate
    ```
-2. Pull the latest changes:
-   ```bat
-   git pull
-   ```
-3. Update dependencies (safe to run every time):
+2. If `requirements.txt` changed, reinstall dependencies:
    ```bat
    python -m pip install -r requirements.txt
    ```
-4. Apply database migrations (needed if models changed):
+3. If models changed, create and apply migrations:
    ```bat
+   python manage.py makemigrations
    python manage.py migrate
    ```
-5. Restart the server:
+4. Start the server:
    ```bat
    python manage.py runserver
    ```
-
-If you are deploying to PythonAnywhere, follow the repo's `PythonAnywhere_Update_Guide.md`.
 
 ## Testing
 
