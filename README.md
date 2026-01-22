@@ -18,8 +18,6 @@ TFMS-CodeForce is a Django-based Task Force Management System for academic depar
 - [Troubleshooting](#troubleshooting)
 - [Project Structure](#project-structure)
 - [Tech Stack](#tech-stack)
-- [License](#license)
-- [Contributing](#contributing)
 
 ## Quick Start (Beginner, Step-by-Step)
 
@@ -535,11 +533,3 @@ python manage.py test
 - Poppins font (Google Fonts in `templates/base.html`)
 - openpyxl and reportlab for Excel/PDF exports
 - python-dotenv for `.env` loading
-
-## License
-
-No license file found.
-
-## Contributing
-
-No contributing guidelines were found in the repo. If you plan to contribute, open an issue or PR with a clear description of the change.
