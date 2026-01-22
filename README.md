@@ -4,6 +4,23 @@
 
 TFMS-CodeForce is a Django-based Task Force Management System for academic departments, built as a semester project for Universiti Teknologi Malaysia (UTM). It provides role-based dashboards (Admin, HOD, PSM, Management/Dean, Lecturer), staff and department administration, task force creation and approval workflows, workload settings, audit logs with CSV export, and report exports in Excel/PDF. The UI is rendered with Django templates and Bootstrap, and data is stored in SQLite by default (PostgreSQL via `DATABASE_URL`).
 
+## Table of Contents
+
+- [Quick Start (Beginner, Step-by-Step)](#quick-start-beginner-step-by-step)
+- [Requirements (Prerequisites)](#requirements-prerequisites)
+- [Download / Clone the Project](#download--clone-the-project)
+- [Setup (Local Development)](#setup-local-development)
+- [Database Setup](#database-setup)
+- [Create an Admin / Superuser](#create-an-admin--superuser)
+- [Running the Project Locally](#running-the-project-locally)
+- [Updating the Project Using AI](#updating-the-project-using-ai)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+- [Project Structure](#project-structure)
+- [Tech Stack](#tech-stack)
+- [License](#license)
+- [Contributing](#contributing)
+
 ## Quick Start (Beginner, Step-by-Step)
 
 These steps assume you only have an internet connection and a computer. If you already have Git and Python installed, start at step 4.
