@@ -135,7 +135,7 @@ These steps assume you only have an internet connection and a computer. If you a
 ## Requirements (Prerequisites)
 
 You will need:
-- Python 3.10+ (from `Local_Run_Guide.md`)
+- Python 3.10+ (required for this project)
 - Git
 - Optional: PostgreSQL if you choose it in Database Setup
 
@@ -193,7 +193,7 @@ Git is a version control tool that downloads the project and lets you update it 
    ```bash
    cd TFMS-CodeForce
    ```
-4. You should see files like `manage.py`, `requirements.txt`, `accounts/`, `dashboard/`, `university/`, `tfms_core/`, `templates/`, `static/`, `Local_Run_Guide.md`, `PythonAnywhere_Update_Guide.md`, `logoAndDocuments/`.
+4. You should see files like `manage.py`, `requirements.txt`, `accounts/`, `dashboard/`, `university/`, `tfms_core/`, `templates/`, `static/`, `PythonAnywhere_Update_Guide.md`, `logoAndDocuments/`.
 
 ### Windows
 1. Open PowerShell or Command Prompt.
@@ -205,7 +205,7 @@ Git is a version control tool that downloads the project and lets you update it 
    ```bat
    cd TFMS-CodeForce
    ```
-4. You should see files like `manage.py`, `requirements.txt`, `accounts/`, `dashboard/`, `university/`, `tfms_core/`, `templates/`, `static/`, `Local_Run_Guide.md`, `PythonAnywhere_Update_Guide.md`, `logoAndDocuments/`.
+4. You should see files like `manage.py`, `requirements.txt`, `accounts/`, `dashboard/`, `university/`, `tfms_core/`, `templates/`, `static/`, `PythonAnywhere_Update_Guide.md`, `logoAndDocuments/`.
 
 ## Setup (Local Development)
 
@@ -225,7 +225,7 @@ Git is a version control tool that downloads the project and lets you update it 
 Notes:
 - Important: If `EMAIL_HOST_USER` or `EMAIL_HOST_PASSWORD` is missing, email features will not send.
 - `tfms_core/settings.py` hardcodes `DEBUG=True`, `SECRET_KEY`, `EMAIL_HOST=smtp.gmail.com`, `EMAIL_PORT=587`, and `EMAIL_USE_TLS=True`. To change these, edit `tfms_core/settings.py`.
-- `Local_Run_Guide.md` shows extra keys (`DEBUG`, `SECRET_KEY`, `EMAIL_HOST`, `EMAIL_PORT`, `DEFAULT_FROM_EMAIL`), but only `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and `DATABASE_URL` are read from the environment in the current code.
+- The repo does not include a `Local_Run_Guide.md` file anymore; this README is the source of truth for local setup.
 
 Example `.env`:
 ```ini
@@ -301,7 +301,7 @@ If the App Passwords page looks different or is not available, search the intern
 
 ## What you need to provide
 
-Checked `requirements.txt`, `tfms_core/settings.py`, `manage.py`, `Local_Run_Guide.md`, and `PythonAnywhere_Update_Guide.md`. Missing items you must supply:
+Checked `requirements.txt`, `tfms_core/settings.py`, `manage.py`, and `PythonAnywhere_Update_Guide.md`. Missing items you must supply:
 - SMTP credentials (`EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`) if you want emails for account creation, password resets, and lecturer remarks.
 - A `DATABASE_URL` value if you want PostgreSQL instead of SQLite.
 - Production-safe settings (the repo hardcodes `SECRET_KEY` and `DEBUG=True`).
@@ -442,7 +442,7 @@ Server logs and errors appear in the terminal where you ran `runserver`. Django 
 If you are new and want to change this project (add a feature, fix a bug, update wording), you can use an AI coding assistant. A safe workflow:
 
 1. Make sure the project runs first (finish **Quick Start**).
-2. Tell the AI exactly what you want to change and ask it to read the relevant files (for example: `README.md`, `Local_Run_Guide.md`, `tfms_core/settings.py`, `accounts/`, `dashboard/`, `university/`, `templates/`).
+2. Tell the AI exactly what you want to change and ask it to read the relevant files (for example: `README.md`, `tfms_core/settings.py`, `accounts/`, `dashboard/`, `university/`, `templates/`).
 3. Ask the AI to explain the plan before changing files, then apply the changes.
 4. Review the changes before running the app.
 5. Run the update steps below based on what was changed.
@@ -520,12 +520,11 @@ python manage.py test
 - `logoAndDocuments/` - Logos and use case documentation
 - `manage.py` - Django management entry point
 - `requirements.txt` - Python dependencies
-- `Local_Run_Guide.md` - Local setup guide
 - `PythonAnywhere_Update_Guide.md` - Notes for updating a PythonAnywhere deployment
 
 ## Tech Stack
 
-- Python 3.10+ (per `Local_Run_Guide.md`)
+- Python 3.10+ (required for this project)
 - Django >= 5.0 (from `requirements.txt`; settings header mentions 4.2.27)
 - SQLite (default via `dj-database-url`)
 - PostgreSQL (optional via `psycopg2-binary` and `DATABASE_URL`)
