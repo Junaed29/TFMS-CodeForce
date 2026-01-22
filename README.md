@@ -51,7 +51,7 @@ These steps assume you only have an internet connection and a computer. If you a
    ```bash
    python3 -m pip install -r requirements.txt
    ```
-7. Create a `.env` file for email (optional but recommended):
+7. Create a `.env` file for email (needed for mail service; see [Gmail App Password](#gmail-app-password-email_host_password) for password generation):
    ```bash
    cat > .env <<'EOF'
    EMAIL_HOST=smtp.gmail.com
@@ -105,7 +105,7 @@ These steps assume you only have an internet connection and a computer. If you a
    ```powershell
    python -m pip install -r requirements.txt
    ```
-7. Create a `.env` file for email (optional but recommended):
+7. Create a `.env` file for email (needed for mail service; see [Gmail App Password](#gmail-app-password-email_host_password) for password generation):
    ```powershell
    notepad .env
    ```
