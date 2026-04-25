@@ -2,10 +2,40 @@
 
 ![Universiti Teknologi Malaysia (UTM) Logo](logoAndDocuments/UTM-LOGO-FULL.png)
 
-TFMS-CodeForce is a Django-based Task Force Management System for academic departments, built as a semester project for Universiti Teknologi Malaysia (UTM). It provides role-based dashboards (Admin, HOD, PSM, Management/Dean, Lecturer), staff and department administration, task force creation and approval workflows, workload settings, audit logs with CSV export, and report exports in Excel/PDF. The UI is rendered with Django templates and Bootstrap, and data is stored in SQLite by default (PostgreSQL via `DATABASE_URL`).
+TFMS-CodeForce is a Django-based Task Force Management System (TFMS) submitted as the **SE Project** course deliverable for the **Master of Software Engineering** programme at **Universiti Teknologi Malaysia (UTM)**. The project simulates a real software-engineering engagement for the Faculty of Artificial Intelligence (FAI) — the FAI scenario is the course's client brief, not a live deployment.
+
+It provides role-based dashboards (Admin, HOD, PSM, Management/Dean, Lecturer), staff and department administration, task force creation and approval workflows, workload settings, audit logs with CSV export, and report exports in Excel/PDF. The UI is rendered with Django templates and Bootstrap, and data is stored in SQLite by default (PostgreSQL via `DATABASE_URL`).
+
+## Team & Supervisors
+
+Built by **Team CodeForce** under contract reference `MSE-FT31-2025`:
+
+- **Junaed Muhammad Chowdhury** — Project Leader
+- Yahya Haghshenas
+- Abubakar Abdu Usman
+- Dou Chenhui
+- Qi Junqiu
+- Roshaimieza Binti Mat Adam
+
+Course supervisors: **Assoc. Prof. Ts. Dr. Azri Bin Azmi** (Project Manager) and **Ts. Dr. Othman bin Mohd Yusop** (Client).
+
+## Project Documents
+
+The full set of formal SE Project deliverables lives in [docs/](docs/):
+
+| Document | File |
+| --- | --- |
+| User Requirements Specification (URS) | `docs/URS for Taskforce Monitoring System v1.pdf` |
+| Software Development Plan (SDP) | `docs/SDP-TFMS-261225-V1.pdf` |
+| Software Requirements Specification (SRS) | `docs/SRS-TFMS-140126-V1.pdf` |
+| Software Design Description (SDD) | `docs/SDD-TFMS-190126-V1.pdf` |
+| Software Test Description (STD) | `docs/STD-TFMS-190126-V1.pdf` |
+| Software Test Report (STR) | `docs/STR-TFMS-190126-V1.pdf` |
 
 ## Table of Contents
 
+- [Team & Supervisors](#team--supervisors)
+- [Project Documents](#project-documents)
 - [Quick Start (Beginner, Step-by-Step)](#quick-start-beginner-step-by-step)
 - [Requirements (Prerequisites)](#requirements-prerequisites)
 - [Download / Clone the Project](#download--clone-the-project)
@@ -517,7 +547,8 @@ python manage.py test
 - `university/` - Department, task force, and workload logic
 - `templates/` - Django HTML templates and email templates
 - `static/` - CSS and images
-- `logoAndDocuments/` - Logos and use case documentation
+- `docs/` - Formal SE Project deliverables (URS, SDP, SRS, SDD, STD, STR)
+- `logoAndDocuments/` - UTM and CodeForce logos, supplementary use case material
 - `manage.py` - Django management entry point
 - `requirements.txt` - Python dependencies
 - `PythonAnywhere_Update_Guide.md` - Notes for updating a PythonAnywhere deployment
